@@ -1,52 +1,48 @@
-import fitz  # PyMuPDF
+import fitz
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from PyPDF2 import PdfReader, PdfWriter
 import io, os
 from reportlab.lib.utils import ImageReader
 
-# 페이지 크기 (pt 단위)
-TARGET_W = 460 * mm
-TARGET_H = 318 * mm
+# 최종 재단 사이즈
+TRIM_W = 460 * mm
+TRIM_H = 318 * mm
 
-# 크롭마크 길이 (5mm)
-CROP_LEN = 5 * mm
-# 재단선에서 바깥쪽 거리 (3mm)
-CROP_OFFSET = 3 * mm
+# 크롭마크 설정
+CROP_LEN = 5 * mm   # 선 길이 (5mm)
 
 def draw_cropmarks(c):
-    c.setStrokeColorRGB(0, 0, 0)  # 인쇄용 블랙
+    c.setStrokeColorRGB(0, 0, 0)
     c.setLineWidth(0.5)
 
-    mid_x = TARGET_W / 2
-    mid_y = TARGET_H / 2
+    left, right = 0, TRIM_W
+    bottom, top = 0, TRIM_H
+    mid_x, mid_y = TRIM_W / 2, TRIM_H / 2
 
-    # --- 네 모서리 L자형 ---
-    # 좌하단
-    c.line(-CROP_OFFSET, 0, -CROP_OFFSET - CROP_LEN, 0)  # 가로
-    c.line(0, -CROP_OFFSET, 0, -CROP_OFFSET - CROP_LEN)  # 세로
-
-    # 우하단
-    c.line(TARGET_W + CROP_OFFSET, 0, TARGET_W + CROP_OFFSET + CROP_LEN, 0)
-    c.line(TARGET_W, -CROP_OFFSET, TARGET_W, -CROP_OFFSET - CROP_LEN)
-
-    # 좌상단
-    c.line(-CROP_OFFSET, TARGET_H, -CROP_OFFSET - CROP_LEN, TARGET_H)
-    c.line(0, TARGET_H + CROP_OFFSET, 0, TARGET_H + CROP_OFFSET + CROP_LEN)
-
-    # 우상단
-    c.line(TARGET_W + CROP_OFFSET, TARGET_H, TARGET_W + CROP_OFFSET + CROP_LEN, TARGET_H)
-    c.line(TARGET_W, TARGET_H + CROP_OFFSET, TARGET_W, TARGET_H + CROP_OFFSET + CROP_LEN)
+    # --- 모서리 L자 ---
+    # 좌하
+    c.line(left, bottom, left + CROP_LEN, bottom)   # 가로
+    c.line(left, bottom, left, bottom + CROP_LEN)   # 세로
+    # 우하
+    c.line(right, bottom, right - CROP_LEN, bottom)
+    c.line(right, bottom, right, bottom + CROP_LEN)
+    # 좌상
+    c.line(left, top, left + CROP_LEN, top)
+    c.line(left, top, left, top - CROP_LEN)
+    # 우상
+    c.line(right, top, right - CROP_LEN, top)
+    c.line(right, top, right, top - CROP_LEN)
 
     # --- 네 변 중앙 ---
-    # 상단 중앙
-    c.line(mid_x, TARGET_H + CROP_OFFSET, mid_x, TARGET_H + CROP_OFFSET + CROP_LEN)
-    # 하단 중앙
-    c.line(mid_x, -CROP_OFFSET, mid_x, -CROP_OFFSET - CROP_LEN)
-    # 좌측 중앙
-    c.line(-CROP_OFFSET, mid_y, -CROP_OFFSET - CROP_LEN, mid_y)
-    # 우측 중앙
-    c.line(TARGET_W + CROP_OFFSET, mid_y, TARGET_W + CROP_OFFSET + CROP_LEN, mid_y)
+    # 위
+    c.line(mid_x, top, mid_x, top - CROP_LEN)
+    # 아래
+    c.line(mid_x, bottom, mid_x, bottom + CROP_LEN)
+    # 좌
+    c.line(left, mid_y, left + CROP_LEN, mid_y)
+    # 우
+    c.line(right, mid_y, right - CROP_LEN, mid_y)
 
 
 def resize_with_cropmarks(input_pdf):
@@ -62,9 +58,9 @@ def resize_with_cropmarks(input_pdf):
         orig_h = float(page.mediabox.height)
 
         # 작은 경우만 확대
-        if orig_w < TARGET_W and orig_h < TARGET_H:
-            scale_w = TARGET_W / orig_w
-            scale_h = TARGET_H / orig_h
+        if orig_w < TRIM_W and orig_h < TRIM_H:
+            scale_w = TRIM_W / orig_w
+            scale_h = TRIM_H / orig_h
             scale = min(scale_w, scale_h)
         else:
             scale = 1.0
@@ -72,7 +68,8 @@ def resize_with_cropmarks(input_pdf):
         new_w = orig_w * scale
         new_h = orig_h * scale
 
-        c = canvas.Canvas("temp.pdf", pagesize=(TARGET_W, TARGET_H))
+        # 캔버스 (페이지 크기 고정: 460x318mm)
+        c = canvas.Canvas("temp.pdf", pagesize=(TRIM_W, TRIM_H))
 
         # 원본 PDF → 이미지 렌더링
         pix = doc[i].get_pixmap(matrix=fitz.Matrix(scale, scale))
@@ -80,16 +77,17 @@ def resize_with_cropmarks(input_pdf):
         img = ImageReader(io.BytesIO(imgdata))
 
         # 중앙 배치
-        offset_x = (TARGET_W - new_w) / 2
-        offset_y = (TARGET_H - new_h) / 2
+        offset_x = (TRIM_W - new_w) / 2
+        offset_y = (TRIM_H - new_h) / 2
         c.drawImage(img, offset_x, offset_y, new_w, new_h, mask='auto')
 
-        # 크롭마크 추가
+        # 재단선 (크롭마크) 표시
         draw_cropmarks(c)
 
         c.showPage()
         c.save()
 
+        # temp.pdf → 최종 PDF에 추가
         temp_reader = PdfReader("temp.pdf")
         writer.add_page(temp_reader.pages[0])
 
