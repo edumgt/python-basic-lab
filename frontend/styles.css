@@ -1,0 +1,103 @@
+:root {
+  --bg: #f2ede2;
+  --paper: #fbf8f2;
+  --ink: #101010;
+  --muted: #545454;
+  --line: #d6c9b3;
+  --accent: #b63f1d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans KR", "Noto Sans KR", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 15% 10%, #f6d9b2 0%, transparent 40%),
+    radial-gradient(circle at 85% 90%, #b8d9d0 0%, transparent 45%),
+    var(--bg);
+  min-height: 100vh;
+}
+
+.layout {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--paper);
+}
+
+h1,
+h2 {
+  margin-top: 0;
+  letter-spacing: 0.02em;
+}
+
+label {
+  display: block;
+  margin: 10px 0 6px;
+  font-weight: 600;
+}
+
+input,
+textarea,
+select,
+button {
+  width: 100%;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+button {
+  margin-top: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+button:hover {
+  filter: brightness(0.95);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.job {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 10px;
+  background: #fff;
+}
+
+.job pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0 0;
+}
+
+@media (max-width: 640px) {
+  .layout {
+    padding: 14px;
+  }
+}

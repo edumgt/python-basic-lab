@@ -1,59 +1,203 @@
 # pycap
 
-## 개요
-이 저장소는 여러 개의 파이썬 스크립트로 구성되어 있으며, **문서(PDF) 후처리**, **화면 녹화 및 영상 후처리**, **OCR 기반 개인정보 마스킹**, **자막 제거 실험** 등 다양한 자동화 작업을 실험적으로 다룹니다. 각 스크립트는 독립적으로 실행되며, 용도별로 기능이 분리되어 있습니다.【F:main.py†L1-L86】【F:pdf.py†L1-L92】【F:cap.py†L1-L111】【F:start.py†L1-L124】【F:ana.py†L1-L78】【F:mask.py†L1-L59】【F:remove.py†L1-L43】
+여러 Python 스크립트로 구성된 멀티미디어 자동화 실험 저장소입니다.  
+핵심 도메인은 다음 4가지입니다.
 
-## 기술 스택
-- **언어**: Python
-- **문서/PDF 처리**
-  - PyMuPDF(fitz), ReportLab, PyPDF2: PDF 렌더링/크기 조정/크롭마크 생성.【F:main.py†L1-L65】【F:pdf.py†L1-L90】
-- **영상/이미지 처리**
-  - OpenCV, Pillow: 화면 프레임 처리 및 영상 저장.【F:cap.py†L1-L79】【F:start.py†L1-L77】
-  - ffmpeg(파이썬 바인딩 포함): 오디오/비디오 병합, 동영상 후처리.【F:ana.py†L1-L78】【F:remove.py†L1-L43】
-- **캡처/입력 제어**
-  - mss: 화면 캡처.【F:cap.py†L1-L56】【F:start.py†L1-L52】
-  - pynput: 글로벌 핫키 처리.【F:cap.py†L1-L108】【F:start.py†L1-L124】
-  - pyautogui: 마우스 커서 위치 표시(녹화 프레임 표시용).【F:cap.py†L1-L69】
-- **AI/음성**
-  - Transformers(BLIP), PyTorch: 이미지 캡셔닝으로 장면 설명 생성.【F:ana.py†L1-L44】
-  - gTTS: 설명 텍스트의 음성 합성.【F:ana.py†L1-L72】【F:start.py†L1-L77】
-- **OCR**
-  - Tesseract OCR(pytesseract): 주민번호 패턴 탐지 후 마스킹.【F:mask.py†L1-L59】
-- **AWS 연동**
-  - boto3: Lambda 환경에서 S3 기반 PDF 후처리 예시.【F:main.py†L67-L86】
+1. PDF 후처리(리사이즈 + 크롭마크)
+2. 화면 녹화/영상 후처리
+3. AI 캡션 + TTS 음성 합성
+4. OCR 기반 개인정보 마스킹
 
-> 참고: `requirements.txt`에는 PDF 처리 라이브러리만 명시되어 있으며, 나머지 의존성은 별도 설치가 필요합니다.【F:requirements.txt†L1-L3】
+이번 업데이트에서 아래 항목을 반영했습니다.
 
-## 주요 목적 및 스크립트 설명
+1. 각 `*.py` 동작 분석 정리
+2. `ana.py`, `main2.py` 실행 흐름 개선
+3. FastAPI 백엔드 스캐폴드 추가
+4. FE 대시보드 + Docker 통합 실행 구성 추가
 
-### 1) PDF 크기 보정 및 크롭마크 삽입
-- **`pdf.py`**: 입력 PDF를 지정된 재단 사이즈(460×318mm)에 맞춰 중앙 배치하고 크롭마크를 추가한 뒤 `_work.pdf`로 저장합니다.【F:pdf.py†L1-L92】
-- **`main.py`**: `pdf.py`와 유사한 처리를 수행하되, AWS Lambda + S3 트리거 기반 워크플로 예시가 포함되어 있습니다.【F:main.py†L1-L86】
+## 저장소 구조
 
-### 2) 화면 녹화 및 간단한 후처리
-- **`cap.py`**: 화면을 일정 해상도로 중앙 크롭하여 녹화하고, 녹화 중 마우스 위치를 녹색 원으로 표시합니다. 단축키로 녹화 시작/중지/종료를 제어합니다.【F:cap.py†L1-L111】
-- **`start.py`**: `cap.py`와 유사한 화면 녹화 기능을 제공하며, 녹화 후 기본 설명을 TTS로 합성해 영상에 오디오를 병합합니다.【F:start.py†L1-L124】
+```text
+.
+├─ ana.py
+├─ cap.py
+├─ main.py
+├─ main2.py
+├─ mask.py
+├─ pdf.py
+├─ remove.py
+├─ start.py
+├─ backend/
+│  ├─ Dockerfile
+│  ├─ requirements.txt
+│  └─ app/
+│     ├─ __init__.py
+│     └─ main.py
+├─ frontend/
+│  ├─ Dockerfile
+│  ├─ nginx.conf
+│  ├─ index.html
+│  ├─ app.js
+│  └─ styles.css
+├─ docker-compose.yml
+├─ requirements.txt
+└─ requirements.full.txt
+```
 
-### 3) 녹화 영상의 AI 캡션/음성 생성
-- **`ana.py`**: 영상에서 일정 시간 간격으로 프레임을 추출해 BLIP 모델로 장면 설명을 생성하고, 자막을 입힌 뒤 전체 설명을 gTTS로 음성 합성하여 합칩니다.【F:ana.py†L1-L78】
-- **`main2.py`**: `cap.py` 실행 → 녹화 완료 대기 → 가장 최근 mp4를 찾아 `ana.py`로 분석하는 파이프라인 스크립트입니다.【F:main2.py†L1-L27】
+## 각 Python 파일 분석
 
-### 4) OCR 기반 개인정보 마스킹
-- **`mask.py`**: 이미지에서 주민등록번호 패턴을 탐지해 뒷자리 영역을 마스킹(검정 박스) 처리합니다. 폴더 단위 배치 처리도 지원합니다.【F:mask.py†L1-L59】
+| 파일 | 실행 내용 | 입력/출력 | 핵심 기술 스택 | 실행 명령 |
+|---|---|---|---|---|
+| `pdf.py` | PDF 각 페이지를 460x318mm 기준으로 중앙 배치 후 크롭마크 삽입 | 입력: 사용자 입력 PDF 경로, 출력: `*_work.pdf` | `PyMuPDF`, `reportlab`, `PyPDF2` | `python pdf.py` |
+| `main.py` | `resize_with_cropmarks()` + `lambda_handler()`로 S3 이벤트 기반 처리 예시 | 입력: S3 event, 출력: S3 업로드(`*_work.pdf`) | `boto3`, PDF 스택 | Lambda 환경에서 핸들러로 사용 |
+| `cap.py` | 글로벌 핫키 기반 화면 녹화, 중앙 크롭, 마우스 커서 표시 | 입력: 데스크톱 화면, 출력: `z_YYYYmmdd_HHMMSS.mp4` | `mss`, `pynput`, `opencv`, `Pillow`, `pyautogui` | `python cap.py` |
+| `start.py` | 화면 녹화 후 고정 설명 TTS 생성, 영상+오디오 병합 | 입력: 화면, 출력: `record_*.mp4`, `final_record_*.mp4` | `gTTS`, `ffmpeg`, 영상 스택 | `python start.py` |
+| `ana.py` | 영상 프레임 간격 샘플링 -> BLIP 캡션 -> 자막 오버레이 -> TTS 합성 | 입력: mp4, 출력: `captioned_<원본>_<timestamp>.mp4` | `torch`, `transformers(BLIP)`, `gTTS`, `ffmpeg-python` | `python ana.py <video_path>` |
+| `main2.py` | `cap.py` 종료 후 최신 `z_*.mp4`/`record_*.mp4`를 `ana.py`로 전달 | 입력: 녹화 결과 파일, 출력: 분석된 mp4 | `subprocess`, 파이프라인 오케스트레이션 | `python main2.py` |
+| `mask.py` | OCR 결과에서 주민번호 패턴 탐지 후 뒷자리 영역 마스킹 | 입력: `org/` 이미지, 출력: `upd/` 이미지 | `pytesseract`, `opencv`, `regex` | `python mask.py` |
+| `remove.py` | 프레임 추출 -> 하단 영역 인페인팅 -> 동영상 재조립 | 입력: `1.mp4`, 출력: `output_cleaned.mp4` | `opencv`, `ffmpeg` | `python remove.py` |
 
-### 5) 자막 제거 실험
-- **`remove.py`**: 영상 프레임을 추출한 뒤, 하단 자막 영역을 인페인팅으로 제거하고 다시 영상으로 합치는 실험 스크립트입니다.【F:remove.py†L1-L43】
+## 기술 스택 상세
 
-## 사용 방법 (예시)
-> 각 스크립트는 독립적으로 실행됩니다. 필요한 라이브러리를 먼저 설치하세요.
+1. PDF: `PyMuPDF`, `reportlab`, `PyPDF2`
+2. Video/Image: `opencv-python`, `numpy`, `Pillow`, `mss`
+3. Desktop Control: `pynput`, `pyautogui`
+4. AI Caption: `torch`, `transformers` (BLIP)
+5. TTS/Media Merge: `gTTS`, `ffmpeg`, `ffmpeg-python`
+6. OCR/PII: `pytesseract`
+7. Cloud Example: `boto3` (Lambda + S3 pattern)
+8. Solution Layer: `FastAPI`, `Uvicorn`, `Nginx`, `Docker Compose`
+
+`requirements.txt`는 PDF 최소 의존성만 포함합니다.  
+전체 의존성 설치가 필요하면 `requirements.full.txt`를 사용하세요.
+
+## 로컬 실행
+
+시스템 의존성:
+
+1. `ffmpeg`
+2. `tesseract-ocr` (OCR 기능 사용 시)
+
+Python 의존성:
 
 ```bash
-# PDF 크롭마크 처리
+pip install -r requirements.full.txt
+```
+
+예시:
+
+```bash
+# 1) PDF 후처리
 python pdf.py
 
-# 화면 녹화 (핫키 사용)
+# 2) 화면 녹화
 python cap.py
 
-# 녹화 + 자동 분석 파이프라인
+# 3) 특정 영상 AI 분석
+python ana.py z_20260301_120000.mp4 --frame-interval 2
+
+# 4) 녹화 후 자동 분석 파이프라인
 python main2.py
 ```
+
+## 이번 코드 보완 사항
+
+1. `ana.py`
+2. CLI 인자 지원(`video_path`, `--frame-interval`, `--font-path`, `--tts-lang`)
+3. 영상 미지정 시 최신 녹화본 자동 탐색
+4. ffmpeg 병합 호출 방식 보완
+5. `main2.py`
+6. `z_*.mp4`/`record_*.mp4` 모두 탐색하도록 수정
+7. `sys.executable` 사용으로 환경 일관성 개선
+
+## FastAPI 백엔드 솔루션
+
+추가된 파일: [`backend/app/main.py`](backend/app/main.py)
+
+핵심 API:
+
+1. `GET /api/health`: 헬스체크
+2. `GET /api/tasks`: 실행 가능한 스크립트 목록/메타데이터
+3. `POST /api/jobs`: 작업 실행(비동기)
+4. `GET /api/jobs`: 작업 목록 조회
+5. `GET /api/jobs/{job_id}`: 작업 상세(표준출력/에러 포함)
+
+실행 요청 예시:
+
+```bash
+curl -X POST http://localhost:8000/api/jobs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_id": "video_caption_tts",
+    "args": ["z_20260301_120000.mp4", "--frame-interval", "2"],
+    "cwd": "."
+  }'
+```
+
+`pdf.py`처럼 stdin 입력이 필요한 작업은 `stdin` 필드를 함께 전달합니다.
+
+```bash
+curl -X POST http://localhost:8000/api/jobs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "task_id": "pdf_resize_cropmarks",
+    "stdin": "01.pdf\n",
+    "cwd": "."
+  }'
+```
+
+## FE 연동 솔루션
+
+추가된 파일: [`frontend/index.html`](frontend/index.html), [`frontend/app.js`](frontend/app.js)
+
+기능:
+
+1. 백엔드 작업 목록 로드
+2. 스크립트 선택 + args/stdin 입력 후 실행
+3. 작업 상태/로그 실시간 폴링(5초)
+
+Nginx에서 `/api/*`를 백엔드로 프록시하여 same-origin으로 동작합니다.
+
+## Docker 통합 구성
+
+추가된 파일: [`docker-compose.yml`](docker-compose.yml)
+
+서비스:
+
+1. `backend`: FastAPI (`:8000`)
+2. `frontend`: Nginx 정적 UI + API 프록시 (`:8080`)
+3. 백엔드 컨테이너에는 기본적으로 `requirements.txt`(PDF 스택) + FastAPI 의존성이 설치됨
+
+실행:
+
+```bash
+docker compose up -d --build
+```
+
+접속:
+
+1. FE: `http://localhost:8080`
+2. BE API: `http://localhost:8000/api/health`
+
+## 확장/고도화 제안
+
+1. Script -> Library 분리
+2. 각 스크립트 로직을 함수형 모듈로 분리하고 CLI는 thin wrapper로 축소
+3. Job Queue 도입
+4. FastAPI는 요청/상태관리만 담당하고, 실제 실행은 `Celery + Redis` 또는 `RQ` 워커로 분리
+5. Storage 표준화
+6. 입력/출력 파일을 로컬 폴더 대신 S3/MinIO로 통일하고 job metadata를 DB(PostgreSQL)에 저장
+7. AI 처리 고도화
+8. `ana.py`를 멀티모달 파이프라인(캡션 + ASR + 번역 + 요약)으로 확장
+9. OCR 품질 개선
+10. 주민번호 외 여권번호/계좌번호 등 패턴 룰셋 + confidence threshold + review queue 추가
+11. 운영 품질
+12. `structlog`, OpenTelemetry, Prometheus, Sentry를 붙여 추적/관측성 강화
+13. 보안
+14. 작업 실행 allowlist 유지, 경로 검증 강화, 업로드 파일 바이러스 스캔, API 인증(JWT/Keycloak) 적용
+
+## 권장 다음 단계
+
+1. `mask.py`, `remove.py`를 함수형 모듈로 리팩터링해서 API 직접 호출형으로 전환
+2. GPU/CPU 워커 분리 배포 전략 수립(캡션 모델 전용 워커)
+3. CI에 lint/test + smoke test(docker compose 기반) 추가

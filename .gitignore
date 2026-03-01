@@ -7,3 +7,5 @@
 /te*
 /upd
 /venv
+__pycache__/
+*.pyc

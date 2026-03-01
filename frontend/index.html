@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>pycap automation console</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="card">
+        <h1>pycap automation console</h1>
+        <p class="muted">
+          Run repository scripts through FastAPI and monitor execution status.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>Run Task</h2>
+        <label for="task-select">Task</label>
+        <select id="task-select"></select>
+
+        <label for="args-input">CLI args (space separated)</label>
+        <input id="args-input" type="text" placeholder="example: z_20260301_120000.mp4 --frame-interval 2" />
+
+        <label for="cwd-input">Working directory</label>
+        <input id="cwd-input" type="text" value="." />
+
+        <label for="stdin-input">stdin payload (optional)</label>
+        <textarea id="stdin-input" rows="4" placeholder="example for pdf.py: 01.pdf"></textarea>
+
+        <button id="run-btn">Run</button>
+        <p id="run-status" class="muted"></p>
+      </section>
+
+      <section class="card">
+        <h2>Jobs</h2>
+        <button id="refresh-btn">Refresh</button>
+        <div id="jobs"></div>
+      </section>
+    </main>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
