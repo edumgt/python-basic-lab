@@ -19,14 +19,18 @@
 
 ```text
 .
-├─ ana.py
-├─ cap.py
-├─ main.py
-├─ main2.py
-├─ mask.py
-├─ pdf.py
-├─ remove.py
-├─ start.py
+├─ lab_pdf/                         # PDF 후처리 랩
+│  ├─ pdf_cropmark.py               # 로컬 CLI: 크롭마크 추가
+│  └─ pdf_cropmark_lambda.py        # AWS Lambda: S3 이벤트 기반 크롭마크
+├─ lab_video_capture/               # 화면 녹화 랩
+│  ├─ screen_recorder.py            # 고급 녹화 (커서 시각화, 자동 트림)
+│  └─ screen_recorder_basic.py      # 기본 녹화 (TTS 후처리 포함)
+├─ lab_video_analysis/              # AI 영상 분석 랩
+│  ├─ video_captioner.py            # BLIP 캡션 + TTS 합성
+│  └─ video_pipeline.py             # 녹화 → 분석 파이프라인
+├─ lab_image/                       # 이미지 처리 랩
+│  ├─ id_masker.py                  # OCR 기반 주민번호 마스킹
+│  └─ subtitle_remover.py           # 영상 자막 인페인팅 제거
 ├─ backend/
 │  ├─ Dockerfile
 │  ├─ requirements.txt
@@ -44,18 +48,18 @@
 └─ requirements.full.txt
 ```
 
-## 각 Python 파일 분석
+## 랩별 파일 안내
 
-| 파일 | 실행 내용 | 입력/출력 | 핵심 기술 스택 | 실행 명령 |
+| 랩 | 파일 | 실행 내용 | 핵심 기술 스택 | 실행 명령 |
 |---|---|---|---|---|
-| `pdf.py` | PDF 각 페이지를 460x318mm 기준으로 중앙 배치 후 크롭마크 삽입 | 입력: 사용자 입력 PDF 경로, 출력: `*_work.pdf` | `PyMuPDF`, `reportlab`, `PyPDF2` | `python pdf.py` |
-| `main.py` | `resize_with_cropmarks()` + `lambda_handler()`로 S3 이벤트 기반 처리 예시 | 입력: S3 event, 출력: S3 업로드(`*_work.pdf`) | `boto3`, PDF 스택 | Lambda 환경에서 핸들러로 사용 |
-| `cap.py` | 글로벌 핫키 기반 화면 녹화, 중앙 크롭, 마우스 커서 표시 | 입력: 데스크톱 화면, 출력: `z_YYYYmmdd_HHMMSS.mp4` | `mss`, `pynput`, `opencv`, `Pillow`, `pyautogui` | `python cap.py` |
-| `start.py` | 화면 녹화 후 고정 설명 TTS 생성, 영상+오디오 병합 | 입력: 화면, 출력: `record_*.mp4`, `final_record_*.mp4` | `gTTS`, `ffmpeg`, 영상 스택 | `python start.py` |
-| `ana.py` | 영상 프레임 간격 샘플링 -> BLIP 캡션 -> 자막 오버레이 -> TTS 합성 | 입력: mp4, 출력: `captioned_<원본>_<timestamp>.mp4` | `torch`, `transformers(BLIP)`, `gTTS`, `ffmpeg-python` | `python ana.py <video_path>` |
-| `main2.py` | `cap.py` 종료 후 최신 `z_*.mp4`/`record_*.mp4`를 `ana.py`로 전달 | 입력: 녹화 결과 파일, 출력: 분석된 mp4 | `subprocess`, 파이프라인 오케스트레이션 | `python main2.py` |
-| `mask.py` | OCR 결과에서 주민번호 패턴 탐지 후 뒷자리 영역 마스킹 | 입력: `org/` 이미지, 출력: `upd/` 이미지 | `pytesseract`, `opencv`, `regex` | `python mask.py` |
-| `remove.py` | 프레임 추출 -> 하단 영역 인페인팅 -> 동영상 재조립 | 입력: `1.mp4`, 출력: `output_cleaned.mp4` | `opencv`, `ffmpeg` | `python remove.py` |
+| `lab_pdf` | `pdf_cropmark.py` | PDF를 460×318mm 캔버스에 중앙 배치 후 크롭마크 삽입 | `PyMuPDF`, `reportlab`, `PyPDF2` | `python lab_pdf/pdf_cropmark.py` |
+| `lab_pdf` | `pdf_cropmark_lambda.py` | S3 이벤트 기반 Lambda 크롭마크 처리 | `boto3`, PDF 스택 | Lambda 핸들러로 사용 |
+| `lab_video_capture` | `screen_recorder.py` | 핫키 기반 화면 녹화, 커서 표시, 마지막 5초 자동 제거 | `mss`, `pynput`, `opencv`, `pyautogui` | `python lab_video_capture/screen_recorder.py` |
+| `lab_video_capture` | `screen_recorder_basic.py` | 화면 녹화 후 TTS 설명 음성 합성 | `gTTS`, `ffmpeg`, `mss` | `python lab_video_capture/screen_recorder_basic.py` |
+| `lab_video_analysis` | `video_captioner.py` | 프레임 샘플링 → BLIP 캡션 → 자막 → TTS 합성 | `torch`, `transformers(BLIP)`, `gTTS`, `ffmpeg-python` | `python lab_video_analysis/video_captioner.py <mp4>` |
+| `lab_video_analysis` | `video_pipeline.py` | 녹화 종료 후 최신 mp4를 자동 탐색해 captioner 실행 | `subprocess`, 오케스트레이션 | `python lab_video_analysis/video_pipeline.py` |
+| `lab_image` | `id_masker.py` | OCR로 주민번호 탐지 후 뒷자리 마스킹 | `pytesseract`, `opencv`, `regex` | `python lab_image/id_masker.py` |
+| `lab_image` | `subtitle_remover.py` | 영상 하단 자막 영역 인페인팅 제거 후 재조립 | `opencv`, `ffmpeg` | `python lab_image/subtitle_remover.py [mp4]` |
 
 ## 기술 스택 상세
 
@@ -88,16 +92,16 @@ pip install -r requirements.full.txt
 
 ```bash
 # 1) PDF 후처리
-python pdf.py
+python lab_pdf/pdf_cropmark.py
 
 # 2) 화면 녹화
-python cap.py
+python lab_video_capture/screen_recorder.py
 
 # 3) 특정 영상 AI 분석
-python ana.py z_20260301_120000.mp4 --frame-interval 2
+python lab_video_analysis/video_captioner.py z_20260301_120000.mp4 --frame-interval 2
 
 # 4) 녹화 후 자동 분석 파이프라인
-python main2.py
+python lab_video_analysis/video_pipeline.py
 ```
 
 ## 이번 코드 보완 사항
@@ -134,7 +138,7 @@ curl -X POST http://localhost:8000/api/jobs \
   }'
 ```
 
-`pdf.py`처럼 stdin 입력이 필요한 작업은 `stdin` 필드를 함께 전달합니다.
+`lab_pdf/pdf_cropmark.py`처럼 stdin 입력이 필요한 작업은 `stdin` 필드를 함께 전달합니다.
 
 ```bash
 curl -X POST http://localhost:8000/api/jobs \
@@ -198,6 +202,6 @@ docker compose up -d --build
 
 ## 권장 다음 단계
 
-1. `mask.py`, `remove.py`를 함수형 모듈로 리팩터링해서 API 직접 호출형으로 전환
+1. `lab_image/id_masker.py`, `lab_image/subtitle_remover.py`를 함수형 모듈로 리팩터링해서 API 직접 호출형으로 전환
 2. GPU/CPU 워커 분리 배포 전략 수립(캡션 모델 전용 워커)
 3. CI에 lint/test + smoke test(docker compose 기반) 추가
