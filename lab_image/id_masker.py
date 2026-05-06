@@ -26,6 +26,11 @@ TESSDATA_DIR = os.path.join(BASE_DIR, "tesseract", "tessdata")
 pytesseract.pytesseract.tesseract_cmd = TESSERACT_EXE
 os.environ["TESSDATA_PREFIX"] = TESSDATA_DIR
 
+# === 주민등록번호 자리수 상수 ===
+JUMIN_FRONT_LENGTH = 6   # 앞자리 (생년월일)
+JUMIN_BACK_LENGTH = 7    # 뒷자리 (성별 + 일련번호)
+JUMIN_TOTAL_LENGTH = JUMIN_FRONT_LENGTH + JUMIN_BACK_LENGTH
+
 
 # === 단일 이미지 마스킹 ===
 def mask_jumin_number(image_path, output_path):
@@ -43,7 +48,7 @@ def mask_jumin_number(image_path, output_path):
         if match:
             found = True
             x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
-            front_width = int(w * 6 / 13)
+            front_width = int(w * JUMIN_FRONT_LENGTH / JUMIN_TOTAL_LENGTH)
             mask_x = x + front_width + 5
             mask_w = w - front_width - 5
             cv2.rectangle(image, (mask_x, y), (mask_x + mask_w, y + h), (0, 0, 0), -1)

@@ -14,6 +14,7 @@ Lab: 동영상 자막 제거 (인페인팅)
 """
 
 import os
+import subprocess
 import sys
 
 import cv2
@@ -75,11 +76,17 @@ def clean_frames(frame_count, frames_dir="frames", cleaned_dir="cleaned_frames")
 # === 영상 재조립 ===
 def assemble_video(cleaned_dir="cleaned_frames", output="output_cleaned.mp4"):
     """정리된 프레임을 FFmpeg로 영상으로 조립합니다."""
-    cmd = (
-        f"ffmpeg -y -framerate 30 -i {cleaned_dir}/frame_%05d.png "
-        f"-c:v libx264 -pix_fmt yuv420p {output}"
+    subprocess.run(
+        [
+            "ffmpeg", "-y",
+            "-framerate", "30",
+            "-i", f"{cleaned_dir}/frame_%05d.png",
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            output,
+        ],
+        check=False,
     )
-    os.system(cmd)
     print(f"[DONE] 저장 완료: {output}")
 
 

@@ -12,6 +12,7 @@ Lab: PDF 재단선(크롭마크) 추가 — 로컬 버전
 
 import io
 import os
+import tempfile
 
 import fitz
 from PyPDF2 import PdfReader, PdfWriter
@@ -83,7 +84,8 @@ def resize_with_cropmarks(input_pdf):
         new_h = orig_h * scale
 
         # 임시 PDF 캔버스 (460×318mm 고정)
-        temp_path = f"_temp_page_{i}.pdf"
+        fd, temp_path = tempfile.mkstemp(suffix=".pdf")
+        os.close(fd)
         c = canvas.Canvas(temp_path, pagesize=(TRIM_W, TRIM_H))
 
         # 원본 페이지 → 이미지 렌더링

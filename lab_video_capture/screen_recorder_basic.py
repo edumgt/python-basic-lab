@@ -30,7 +30,7 @@ RESOLUTION = (720, 1080)   # (너비, 높이)
 
 # === 전역 상태 ===
 RECORDING = False
-VIDEO_NAME = f"record_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
+VIDEO_NAME = ""
 frames = []
 
 
@@ -106,8 +106,9 @@ def post_process():
 
 # === 단축키 핸들러 ===
 def on_activate_start():
-    global RECORDING
+    global RECORDING, VIDEO_NAME
     if not RECORDING:
+        VIDEO_NAME = f"record_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
         RECORDING = True
         threading.Thread(target=record_screen, daemon=True).start()
 

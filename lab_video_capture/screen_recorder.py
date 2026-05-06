@@ -93,8 +93,8 @@ def record_screen():
     # 마지막 N초 제거
     print(f"🛑 녹화 중지됨. 마지막 {TRIM_TAIL_SEC}초 제외 중...")
     cutoff = int(FPS * TRIM_TAIL_SEC)
-    if len(FRAME_QUEUE) > cutoff:
-        FRAME_QUEUE = deque(list(FRAME_QUEUE)[:-cutoff])
+    for _ in range(min(cutoff, len(FRAME_QUEUE))):
+        FRAME_QUEUE.pop()
 
     save_video(list(FRAME_QUEUE))
     sys.exit(0)
