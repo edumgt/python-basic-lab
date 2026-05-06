@@ -12,11 +12,14 @@ Lab: 화면 녹화 — 고급 버전 (커서 시각화, 딜레이, 자동 트림
 의존성: opencv-python, mss, pillow, pynput, pyautogui, numpy
 """
 
+from __future__ import annotations
+
 import sys
 import threading
 import time
 from collections import deque
 from datetime import datetime
+from typing import Any
 
 import cv2
 import numpy as np
@@ -37,7 +40,9 @@ VIDEO_NAME = ""
 
 
 # === 유틸 함수 ===
-def center_crop(width, height, target_res):
+def center_crop(
+    width: int, height: int, target_res: tuple[int, int]
+) -> tuple[int, int, int, int]:
     """화면 중앙에서 target_res 크기만큼 크롭하는 좌표를 반환합니다."""
     tw, th = target_res
     x1 = (width - tw) // 2
@@ -45,7 +50,7 @@ def center_crop(width, height, target_res):
     return x1, y1, x1 + tw, y1 + th
 
 
-def save_video(frames):
+def save_video(frames: list[Any]) -> None:
     """frames 리스트를 VIDEO_NAME 파일로 저장합니다."""
     if not frames:
         print("⚠️ 저장할 프레임이 없습니다.")
@@ -59,7 +64,7 @@ def save_video(frames):
 
 
 # === 녹화 루프 ===
-def record_screen():
+def record_screen() -> None:
     """스크린 캡처 루프. 별도 스레드에서 실행됩니다."""
     global RECORDING, FRAME_QUEUE, VIDEO_NAME
 
@@ -101,26 +106,26 @@ def record_screen():
 
 
 # === 단축키 핸들러 ===
-def start_recording():
+def start_recording() -> None:
     global RECORDING
     if not RECORDING:
         RECORDING = True
         threading.Thread(target=record_screen, daemon=True).start()
 
 
-def stop_recording():
+def stop_recording() -> None:
     global RECORDING
     if RECORDING:
         RECORDING = False
 
 
-def force_quit():
+def force_quit() -> None:
     print("💥 프로그램 강제 종료")
     sys.exit(1)
 
 
 # === 진입점 ===
-def main():
+def main() -> None:
     print("⌨️ Ctrl+1 → 녹화 시작 (5초 후)")
     print("⌨️ Ctrl+3 → 녹화 종료 (마지막 5초 제외 + 저장)")
     print("⌨️ Ctrl+5 → 프로그램 종료")

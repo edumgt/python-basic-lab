@@ -13,6 +13,8 @@ screen_recorder.py(cap.py)를 실행해 녹화를 마치고,
     3. video_captioner.py 로 AI 캡션 + TTS 합성
 """
 
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
@@ -21,7 +23,7 @@ from glob import glob
 
 
 # === 유틸 함수 ===
-def find_latest_video():
+def find_latest_video() -> str | None:
     """현재 디렉터리에서 가장 최근 녹화 영상을 반환합니다."""
     candidates = []
     for pattern in ("z_*.mp4", "record_*.mp4"):
@@ -31,7 +33,7 @@ def find_latest_video():
 
 
 # === 파이프라인 실행 ===
-def run():
+def run() -> None:
     """녹화 → 분석 파이프라인을 순서대로 실행합니다."""
     # 1단계: 화면 녹화
     print("[INFO] launching screen_recorder.py...")

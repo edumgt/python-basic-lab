@@ -14,6 +14,7 @@
 2. `ana.py`, `main2.py` 실행 흐름 개선
 3. FastAPI 백엔드 스캐폴드 추가
 4. FE 대시보드 + Docker 통합 실행 구성 추가
+5. **mypy 정적 타입 검사 적용** (전 파일 타입 어노테이션 + `mypy.ini`)
 
 ## 저장소 구조
 
@@ -43,6 +44,12 @@
 │  ├─ index.html
 │  ├─ app.js
 │  └─ styles.css
+├─ docs/                            # 학습 문서
+│  ├─ 001.md                        # PyPI 완벽 가이드
+│  ├─ 002.md                        # 파이썬 들여쓰기 가이드
+│  ├─ 003.md                        # PEP 8 코딩 스타일 가이드
+│  └─ 004.md                        # Mypy 정적 타입 검사 가이드
+├─ mypy.ini                         # mypy 설정
 ├─ docker-compose.yml
 ├─ requirements.txt
 └─ requirements.full.txt
@@ -71,6 +78,7 @@
 6. OCR/PII: `pytesseract`
 7. Cloud Example: `boto3` (Lambda + S3 pattern)
 8. Solution Layer: `FastAPI`, `Uvicorn`, `Nginx`, `Docker Compose`
+9. 정적 타입 검사: `mypy`
 
 `requirements.txt`는 PDF 최소 의존성만 포함합니다.  
 전체 의존성 설치가 필요하면 `requirements.full.txt`를 사용하세요.
@@ -102,6 +110,19 @@ python lab_video_analysis/video_captioner.py z_20260301_120000.mp4 --frame-inter
 
 # 4) 녹화 후 자동 분석 파이프라인
 python lab_video_analysis/video_pipeline.py
+```
+
+## Mypy 타입 검사
+
+프로젝트 전체에 [mypy](https://mypy-lang.org/) 정적 타입 검사가 적용되어 있습니다.  
+설정은 `mypy.ini`에서 관리하며, 제3자 라이브러리 stubs가 없는 경우 `ignore_missing_imports = True`로 처리합니다.
+
+```bash
+# mypy 설치 (requirements.full.txt에 포함)
+pip install mypy
+
+# 전체 프로젝트 검사
+mypy lab_pdf/ lab_video_capture/ lab_video_analysis/ lab_image/ backend/app/main.py
 ```
 
 ## 이번 코드 보완 사항
@@ -183,6 +204,83 @@ docker compose up -d --build
 1. FE: `http://localhost:8080`
 2. BE API: `http://localhost:8000/api/health`
 
+## 학습 문서 (docs/)
+
+### 📄 001 — PyPI (Python Package Index) 완벽 가이드
+
+**PyPI**는 파이썬 소프트웨어 재단(PSF)에서 운영하는 파이썬 공식 제3자 소프트웨어 저장소입니다.  
+약 50만 개 이상의 오픈소스 프로젝트가 등록되어 있으며, **pip**를 통해 패키지를 설치·관리합니다.
+
+| 명령어 | 설명 |
+| :--- | :--- |
+| `pip install <package>` | 패키지 설치 |
+| `pip install <package>==1.2.3` | 특정 버전 설치 |
+| `pip uninstall <package>` | 패키지 삭제 |
+| `pip list` | 설치된 패키지 목록 조회 |
+| `pip freeze > requirements.txt` | 환경 의존성 저장 |
+
+> **보안 주의:** Typosquatting 패키지를 주의하고, 반드시 가상 환경(`venv`)에서 의존성을 관리하세요.
+
+📎 상세 내용: [`docs/001.md`](docs/001.md)
+
+---
+
+### 📄 002 — 파이썬 들여쓰기(Indentation) 가이드
+
+파이썬은 중괄호(`{}`) 대신 **들여쓰기로 코드 블록을 정의**합니다. 들여쓰기를 지키지 않으면 `IndentationError`가 발생합니다.
+
+```python
+def check_weather(temperature):
+    if temperature > 25:
+        print("날씨가 덥습니다.")   # if문에 속함
+    else:
+        print("날씨가 적당합니다.") # else문에 속함
+    print("검사가 완료되었습니다.") # 함수(def)에만 속함
+```
+
+📎 상세 내용: [`docs/002.md`](docs/002.md)
+
+---
+
+### 📄 003 — PEP 8 코딩 스타일 가이드
+
+**PEP 8**은 파이썬 공식 코딩 스타일 가이드입니다. 핵심 규칙은 다음과 같습니다.
+
+| 항목 | 규칙 |
+| :--- | :--- |
+| 들여쓰기 | 공백 4칸 사용 |
+| 줄 길이 | 최대 79자 권장 |
+| 변수·함수 이름 | `snake_case` |
+| 클래스 이름 | `PascalCase` |
+| 상수 이름 | `SCREAMING_SNAKE_CASE` |
+
+> **💡 팁:** `flake8`, `black`, `autopep8` 같은 포매터로 자동 적용할 수 있습니다.
+
+📎 상세 내용: [`docs/003.md`](docs/003.md)
+
+---
+
+### 📄 004 — Mypy 정적 타입 검사 가이드
+
+**Mypy**는 파이썬용 정적 타입 검사기로, 타입 힌트(`->`, `: int` 등)를 활용해 코드를 실행하기 전에 타입 오류를 탐지합니다.
+
+주요 특징:
+- **실행 전 오류 탐지**: 런타임 이전에 타입 불일치를 발견합니다.
+- **점진적 타이핑**: 전체 코드가 아닌 일부 파일이나 함수에만 선택적으로 적용 가능합니다.
+- **성능 영향 없음**: 개발 단계에서만 동작하며 실행 속도에 영향을 주지 않습니다.
+
+```bash
+# 설치
+pip install mypy
+
+# 검사 실행
+mypy <파일 또는 패키지>
+```
+
+📎 상세 내용: [`docs/004.md`](docs/004.md)
+
+---
+
 ## 확장/고도화 제안
 
 1. Script -> Library 분리
@@ -205,3 +303,4 @@ docker compose up -d --build
 1. `lab_image/id_masker.py`, `lab_image/subtitle_remover.py`를 함수형 모듈로 리팩터링해서 API 직접 호출형으로 전환
 2. GPU/CPU 워커 분리 배포 전략 수립(캡션 모델 전용 워커)
 3. CI에 lint/test + smoke test(docker compose 기반) 추가
+

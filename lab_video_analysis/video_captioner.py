@@ -19,10 +19,13 @@ Lab: AI 자동 캡션 + TTS 비디오 파이프라인
 의존성: opencv-python, ffmpeg-python, torch, transformers, pillow, gtts, numpy
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 from datetime import datetime
 from glob import glob
+from typing import Any
 
 import cv2
 import ffmpeg
@@ -34,7 +37,7 @@ from transformers import BlipForConditionalGeneration, BlipProcessor
 
 
 # === 인자 파싱 ===
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Video caption + TTS pipeline.")
     parser.add_argument("video_path", nargs="?", help="Input mp4 path")
     parser.add_argument("--frame-interval", type=float, default=2.0, help="Seconds per caption sample")
@@ -45,7 +48,7 @@ def parse_args():
 
 
 # === 유틸 함수 ===
-def find_latest_video():
+def find_latest_video() -> str | None:
     """현재 디렉터리에서 가장 최근 z_*.mp4 또는 record_*.mp4를 반환합니다."""
     candidates = sorted(
         glob("z_*.mp4") + glob("record_*.mp4"),
@@ -55,7 +58,7 @@ def find_latest_video():
     return candidates[0] if candidates else None
 
 
-def load_font(font_path, font_size):
+def load_font(font_path: str, font_size: int) -> Any:
     """폰트를 로드합니다. 실패 시 기본 폰트를 사용합니다."""
     try:
         return ImageFont.truetype(font_path, font_size)
@@ -65,7 +68,9 @@ def load_font(font_path, font_size):
 
 
 # === 캡션 생성 + 자막 삽입 ===
-def generate_captioned_video(video_path, frame_interval, font):
+def generate_captioned_video(
+    video_path: str, frame_interval: float, font: Any
+) -> tuple[str, list[str]]:
     """
     BLIP 모델로 영상 장면을 캡션하고 자막이 삽입된 임시 영상을 생성합니다.
     반환값: (임시 영상 경로, 캡션 리스트)
@@ -114,7 +119,7 @@ def generate_captioned_video(video_path, frame_interval, font):
 
 
 # === 오디오 + 영상 합성 ===
-def merge_audio_video(temp_video, temp_audio, output_video):
+def merge_audio_video(temp_video: str, temp_audio: str, output_video: str) -> None:
     """FFmpeg로 영상과 오디오를 합칩니다."""
     (
         ffmpeg.output(
@@ -131,7 +136,7 @@ def merge_audio_video(temp_video, temp_audio, output_video):
 
 
 # === 메인 파이프라인 ===
-def run():
+def run() -> None:
     """전체 캡션 + TTS 파이프라인을 실행합니다."""
     args = parse_args()
     video_path = args.video_path or find_latest_video()

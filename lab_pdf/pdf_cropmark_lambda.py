@@ -9,15 +9,19 @@ Lambda 핸들러: lambda_handler(event, context)
     python pdf_cropmark_lambda.py <input.pdf> <output.pdf>
 """
 
+from __future__ import annotations
+
 import io
 import os
 import tempfile
+from typing import Any
 
 import fitz
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
+from reportlab.pdfgen.canvas import Canvas
 
 # === 상수 ===
 TRIM_W = 460 * mm   # 재단 너비
@@ -26,7 +30,7 @@ CROP_LEN = 5 * mm   # 크롭마크 선 길이
 
 
 # === 크롭마크 그리기 ===
-def draw_cropmarks(c):
+def draw_cropmarks(c: Canvas) -> None:
     """캔버스 c 위에 크롭마크(재단선)를 그립니다."""
     c.setStrokeColorRGB(0, 0, 0)
     c.setLineWidth(0.5)
@@ -53,7 +57,7 @@ def draw_cropmarks(c):
 
 
 # === 핵심 변환 ===
-def resize_with_cropmarks(input_pdf, output_pdf):
+def resize_with_cropmarks(input_pdf: str, output_pdf: str) -> None:
     """
     input_pdf 를 460×318mm 캔버스에 맞게 조정하고 크롭마크를 추가합니다.
     결과는 output_pdf 경로에 저장됩니다.
@@ -94,7 +98,7 @@ def resize_with_cropmarks(input_pdf, output_pdf):
 
 
 # === AWS Lambda 핸들러 ===
-def lambda_handler(event, context):
+def lambda_handler(event: dict[str, Any], context: object) -> dict[str, str]:
     """
     S3 트리거 기반 Lambda 핸들러.
     업로드된 PDF에 크롭마크를 추가하고 *_work.pdf 로 저장합니다.

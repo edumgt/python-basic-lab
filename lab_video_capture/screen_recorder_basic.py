@@ -11,11 +11,14 @@ Lab: 화면 녹화 — 기본 버전 (TTS 음성 설명 포함)
 의존성: opencv-python, mss, pillow, pynput, gtts, numpy, ffmpeg-python
 """
 
+from __future__ import annotations
+
 import os
 import subprocess
 import threading
 import time
 from datetime import datetime
+from typing import Any
 
 import cv2
 import numpy as np
@@ -31,11 +34,13 @@ RESOLUTION = (720, 1080)   # (너비, 높이)
 # === 전역 상태 ===
 RECORDING = False
 VIDEO_NAME = ""
-frames = []
+frames: list[Any] = []
 
 
 # === 유틸 함수 ===
-def center_crop(width, height, target_res):
+def center_crop(
+    width: int, height: int, target_res: tuple[int, int]
+) -> tuple[int, int, int, int]:
     """화면 중앙에서 target_res 크기만큼 크롭하는 좌표를 반환합니다."""
     tw, th = target_res
     x1 = (width - tw) // 2
@@ -44,7 +49,7 @@ def center_crop(width, height, target_res):
 
 
 # === 화면 녹화 루프 ===
-def record_screen():
+def record_screen() -> None:
     """스크린 캡처 루프. 별도 스레드에서 실행됩니다."""
     global RECORDING, frames
     sct = mss()
@@ -63,7 +68,7 @@ def record_screen():
 
 
 # === 영상 저장 ===
-def save_video():
+def save_video() -> None:
     """frames 를 VIDEO_NAME 파일로 저장합니다."""
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(VIDEO_NAME, fourcc, FPS, RESOLUTION)
@@ -74,7 +79,7 @@ def save_video():
 
 
 # === TTS + 영상 합성 ===
-def analyze_and_add_audio(video_file):
+def analyze_and_add_audio(video_file: str) -> None:
     """TTS로 설명 음성을 생성하고 FFmpeg로 영상에 합칩니다."""
     description = "이 영상은 사용자 화면을 녹화한 것입니다. 주요 작업이 진행되었습니다."
     print("🎙️ 설명 생성 중...")
@@ -96,7 +101,7 @@ def analyze_and_add_audio(video_file):
 
 
 # === 후처리 ===
-def post_process():
+def post_process() -> None:
     """녹화 종료 후 영상 저장 및 TTS 합성을 수행합니다."""
     time.sleep(10)
     save_video()
@@ -105,7 +110,7 @@ def post_process():
 
 
 # === 단축키 핸들러 ===
-def on_activate_start():
+def on_activate_start() -> None:
     global RECORDING, VIDEO_NAME
     if not RECORDING:
         VIDEO_NAME = f"record_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
@@ -113,7 +118,7 @@ def on_activate_start():
         threading.Thread(target=record_screen, daemon=True).start()
 
 
-def on_activate_stop():
+def on_activate_stop() -> None:
     global RECORDING
     if RECORDING:
         RECORDING = False
@@ -121,13 +126,13 @@ def on_activate_stop():
         threading.Thread(target=post_process, daemon=True).start()
 
 
-def on_activate_exit():
+def on_activate_exit() -> None:
     print("🛑 강제 종료")
     os._exit(0)
 
 
 # === 진입점 ===
-def main():
+def main() -> None:
     print("⌨️ Ctrl+1 → 녹화 시작 / Ctrl+3 → 녹화 종료 / Ctrl+5 → 종료")
     with keyboard.GlobalHotKeys({
         "<ctrl>+1": on_activate_start,
