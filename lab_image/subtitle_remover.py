@@ -13,15 +13,18 @@ Lab: 동영상 자막 제거 (인페인팅)
 의존성: opencv-python, rembg, pillow, ffmpeg (시스템 설치 필요)
 """
 
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
+from typing import Any
 
 import cv2
 
 
 # === 프레임 추출 ===
-def extract_frames(video_path, frames_dir="frames"):
+def extract_frames(video_path: str, frames_dir: str = "frames") -> int:
     """video_path 의 모든 프레임을 frames_dir 에 PNG로 저장합니다."""
     os.makedirs(frames_dir, exist_ok=True)
     video = cv2.VideoCapture(video_path)
@@ -40,7 +43,7 @@ def extract_frames(video_path, frames_dir="frames"):
 
 
 # === 자막 인페인팅 ===
-def inpaint_subtitles(img_path):
+def inpaint_subtitles(img_path: str) -> Any:
     """
     이미지 하단 중앙 자막 영역(하단 15%, 가로 20~80%)을
     인페인팅으로 제거한 결과를 반환합니다.
@@ -60,7 +63,11 @@ def inpaint_subtitles(img_path):
 
 
 # === 인페인팅 일괄 적용 ===
-def clean_frames(frame_count, frames_dir="frames", cleaned_dir="cleaned_frames"):
+def clean_frames(
+    frame_count: int,
+    frames_dir: str = "frames",
+    cleaned_dir: str = "cleaned_frames",
+) -> None:
     """frames_dir 의 프레임 전체에 자막 인페인팅을 적용합니다."""
     os.makedirs(cleaned_dir, exist_ok=True)
 
@@ -74,7 +81,9 @@ def clean_frames(frame_count, frames_dir="frames", cleaned_dir="cleaned_frames")
 
 
 # === 영상 재조립 ===
-def assemble_video(cleaned_dir="cleaned_frames", output="output_cleaned.mp4"):
+def assemble_video(
+    cleaned_dir: str = "cleaned_frames", output: str = "output_cleaned.mp4"
+) -> None:
     """정리된 프레임을 FFmpeg로 영상으로 조립합니다."""
     subprocess.run(
         [
@@ -91,7 +100,7 @@ def assemble_video(cleaned_dir="cleaned_frames", output="output_cleaned.mp4"):
 
 
 # === 메인 파이프라인 ===
-def run(video_path="1.mp4"):
+def run(video_path: str = "1.mp4") -> None:
     """프레임 추출 → 자막 제거 → 영상 재조립 파이프라인을 실행합니다."""
     print(f"[INFO] 입력 영상: {video_path}")
     frame_count = extract_frames(video_path)

@@ -11,6 +11,8 @@ Tesseract OCR로 이미지에서 주민등록번호 패턴을 검출하고
 의존성: opencv-python, pytesseract, tesseract-ocr (시스템 설치 필요)
 """
 
+from __future__ import annotations
+
 import os
 import re
 import sys
@@ -33,7 +35,7 @@ JUMIN_TOTAL_LENGTH = JUMIN_FRONT_LENGTH + JUMIN_BACK_LENGTH
 
 
 # === 단일 이미지 마스킹 ===
-def mask_jumin_number(image_path, output_path):
+def mask_jumin_number(image_path: str, output_path: str) -> None:
     """
     image_path 에서 주민등록번호를 찾아 뒷자리를 마스킹하고
     output_path 에 저장합니다. 검출되지 않으면 생략합니다.
@@ -61,7 +63,7 @@ def mask_jumin_number(image_path, output_path):
 
 
 # === 폴더 일괄 처리 ===
-def process_folder(org_folder="org", upd_folder="upd"):
+def process_folder(org_folder: str = "org", upd_folder: str = "upd") -> None:
     """
     org_folder 의 이미지를 마스킹하여 upd_folder 에 저장합니다.
     이미 처리된 파일은 건너뜁니다.

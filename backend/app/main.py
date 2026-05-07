@@ -140,7 +140,7 @@ def is_within(path: Path, base: Path) -> bool:
 
 
 def resolve_script(task_id: str) -> Path:
-    script_rel = TASKS[task_id]["script"]
+    script_rel: str = TASKS[task_id]["script"]
     script_path = (WORKSPACE_ROOT / script_rel).resolve()
     if not is_within(script_path, WORKSPACE_ROOT):
         raise HTTPException(status_code=400, detail="Invalid script path.")
