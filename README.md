@@ -346,3 +346,9 @@ mypy <파일 또는 패키지>
 1. `lab_image/id_masker.py`, `lab_image/subtitle_remover.py`를 함수형 모듈로 리팩터링해서 API 직접 호출형으로 전환
 2. GPU/CPU 워커 분리 배포 전략 수립(캡션 모델 전용 워커)
 3. CI에 lint/test + smoke test(docker compose 기반) 추가
+
+---
+
+## 🎬 관련 유튜브 강의
+
+[▶ 유튜브에서 "파이썬 기초 프로그래밍 강의" 검색하기](https://www.youtube.com/results?search_query=파이썬+기초+프로그래밍+강의)
