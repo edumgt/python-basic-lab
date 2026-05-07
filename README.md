@@ -59,7 +59,14 @@
 │  ├─ 012.md                        # match 패턴 심화
 │  ├─ 013.md                        # 예외 처리
 │  ├─ 014.md                        # 이터레이터
-│  └─ 015.md                        # 제너레이터
+│  ├─ 015.md                        # 제너레이터
+│  ├─ 016.md                        # OOP 기초 (클래스/객체)
+│  ├─ 017.md                        # 생성자/인스턴스 속성
+│  ├─ 018.md                        # 상속/오버라이딩
+│  ├─ 019.md                        # 다형성/덕 타이핑/ABC
+│  ├─ 020.md                        # 캡슐화/property
+│  ├─ 021.md                        # classmethod/staticmethod
+│  └─ 022.md                        # 특수 메서드/dataclass
 ├─ mypy.ini                         # mypy 설정
 ├─ docker-compose.yml
 ├─ requirements.txt
@@ -292,7 +299,7 @@ mypy <파일 또는 패키지>
 
 ---
 
-### 📄 005 ~ 015 — 파이썬 확장 학습 문서
+### 📄 005 ~ 022 — 파이썬 확장 학습 문서
 
 문법/스타일 기초 이후 학습을 위해 다음 주제를 순차적으로 추가했습니다.
 
@@ -307,6 +314,13 @@ mypy <파일 또는 패키지>
 - [`docs/013.md`](docs/013.md): 예외 처리 (Exception Handling)
 - [`docs/014.md`](docs/014.md): 이터레이터 (Iterator)
 - [`docs/015.md`](docs/015.md): 제너레이터 (Generator)
+- [`docs/016.md`](docs/016.md): 객체 지향 기초 (클래스/객체)
+- [`docs/017.md`](docs/017.md): 생성자와 인스턴스 속성 (`__init__`)
+- [`docs/018.md`](docs/018.md): 상속과 메서드 오버라이딩
+- [`docs/019.md`](docs/019.md): 다형성, 덕 타이핑, 추상 클래스
+- [`docs/020.md`](docs/020.md): 캡슐화와 `property`
+- [`docs/021.md`](docs/021.md): `@classmethod`와 `@staticmethod`
+- [`docs/022.md`](docs/022.md): 특수 메서드와 `dataclass`
 
 ---
 
