@@ -1,5 +1,13 @@
 # pycap
 
+---
+
+| ◀ 이전 강의 | 📚 커리큘럼 (2 / 10) | 다음 강의 ▶ |
+|:---|:---:|---:|
+| [← 개발환경 기본 설정](https://github.com/edumgt/edumgt-lab-init) | **Python 기초 실습** | [Python 크롤링 실습 →](https://github.com/edumgt/python-crawling-lab) |
+
+---
+
 여러 Python 스크립트로 구성된 멀티미디어 자동화 실험 저장소입니다.  
 핵심 도메인은 다음 4가지입니다.
 
