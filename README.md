@@ -1,3 +1,56 @@
+# python-basic-lab
+
+파이썬 기초 학습을 중심으로, **PDF/영상/이미지 처리 + 통계 실습 + FastAPI 실행 오케스트레이션**을 함께 다루는 실습형 저장소입니다.
+
+## 프로젝트 개요
+
+- 학습 문서(`docs/001.md`~`docs/031.md`)로 파이썬 기초/수학/통계 개념을 단계적으로 학습
+- 실습 스크립트(`lab_*`)로 파일 처리·영상 분석·OCR 마스킹 같은 자동화 작업 체험
+- `backend` + `frontend` + `docker-compose.yml`로 스크립트 실행을 API/UI 형태로 실습 가능
+
+## 빠른 시작
+
+### 1) 로컬 환경
+
+필수 시스템 의존성:
+
+1. `ffmpeg`
+2. `tesseract-ocr` (OCR 기능 사용 시)
+
+파이썬 의존성 설치:
+
+```bash
+pip install -r requirements.full.txt
+```
+
+주요 실행 예시:
+
+```bash
+# PDF 후처리
+python lab_pdf/pdf_cropmark.py
+
+# 화면 녹화(고급)
+python lab_video_capture/screen_recorder.py
+
+# AI 캡션 + TTS
+python lab_video_analysis/video_captioner.py sample.mp4 --frame-interval 2
+
+# 통계/확률 기초
+python lab_stats/statistics_basics.py
+python lab_stats/probability_basics.py
+```
+
+### 2) Docker 환경
+
+```bash
+docker compose up -d --build
+```
+
+- FE: `http://localhost:8080`
+- BE API: `http://localhost:8000/api/health`
+
+> 화면 녹화 계열 스크립트는 데스크톱/키보드 훅이 필요해 컨테이너 환경보다 로컬 실행이 적합합니다.
+
 ## 4. 마크다운 수학 기호 작성법 (Cheat Sheet)
 
 | 항목 | 문법 | 결과 |
@@ -165,15 +218,15 @@ pip install mypy
 mypy lab_pdf/ lab_video_capture/ lab_video_analysis/ lab_image/ backend/app/main.py
 ```
 
-## 이번 코드 보완 사항
+## 최근 실행 흐름 보완 사항
 
-1. `ana.py`
-2. CLI 인자 지원(`video_path`, `--frame-interval`, `--font-path`, `--tts-lang`)
-3. 영상 미지정 시 최신 녹화본 자동 탐색
-4. ffmpeg 병합 호출 방식 보완
-5. `main2.py`
-6. `z_*.mp4`/`record_*.mp4` 모두 탐색하도록 수정
-7. `sys.executable` 사용으로 환경 일관성 개선
+- `lab_video_analysis/video_captioner.py`
+  1. CLI 인자 지원(`video_path`, `--frame-interval`, `--font-path`, `--font-size`, `--tts-lang`)
+  2. 영상 미지정 시 최신 녹화본(`z_*.mp4`, `record_*.mp4`) 자동 탐색
+  3. 캡션 중복 제거 후 요약 TTS 생성 및 ffmpeg 병합 처리
+- `lab_video_analysis/video_pipeline.py`
+  1. 녹화 후 최신 mp4 자동 탐색 → `video_captioner.py` 실행
+  2. `sys.executable` 기반 하위 프로세스 실행으로 실행 환경 일관성 유지
 
 ## FastAPI 백엔드 솔루션
 
@@ -364,7 +417,7 @@ mypy <파일 또는 패키지>
 5. Storage 표준화
 6. 입력/출력 파일을 로컬 폴더 대신 S3/MinIO로 통일하고 job metadata를 DB(PostgreSQL)에 저장
 7. AI 처리 고도화
-8. `ana.py`를 멀티모달 파이프라인(캡션 + ASR + 번역 + 요약)으로 확장
+8. `lab_video_analysis/video_captioner.py`를 멀티모달 파이프라인(캡션 + ASR + 번역 + 요약)으로 확장
 9. OCR 품질 개선
 10. 주민번호 외 여권번호/계좌번호 등 패턴 룰셋 + confidence threshold + review queue 추가
 11. 운영 품질
