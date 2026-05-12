@@ -320,7 +320,7 @@ mypy <파일 또는 패키지>
 - [`docs/024.md`](docs/024.md): 튜플, 딕셔너리, 집합 기초
 - [`docs/025.md`](docs/025.md): matplotlib 기초 (`pyplot`, `plot`, `grid`, `show`)
 - [`docs/026.md`](docs/026.md): pandas 기초와 `Series` 핵심 사용법
-- [`docs/027.md`](docs/027.md): 거듭제곱, 지수, 제곱근, 일차방정식, 연립일차방정식, 행렬 기초
+- [`docs/027.md`](docs/027.md): 거듭제곱, 지수, 제곱근, 일차방정식, 선형대수(벡터·행렬) 기초
 
 ---
 
