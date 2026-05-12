@@ -5,10 +5,16 @@ from collections.abc import Sequence
 
 
 def calculate_mean(values: Sequence[float]) -> float:
+    if not values:
+        raise ValueError("데이터는 최소 1개 이상이어야 합니다.")
+
     return sum(values) / len(values)
 
 
 def calculate_deviations(values: Sequence[float], mean: float) -> list[float]:
+    if not values:
+        raise ValueError("데이터는 최소 1개 이상이어야 합니다.")
+
     return [value - mean for value in values]
 
 
