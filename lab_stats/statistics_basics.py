@@ -18,6 +18,12 @@ def calculate_deviations(values: Sequence[float], mean: float) -> list[float]:
     return [value - mean for value in values]
 
 
+def calculate_squared_deviations(values: Sequence[float]) -> list[float]:
+    mean = calculate_mean(values)
+    deviations = calculate_deviations(values, mean)
+    return [deviation**2 for deviation in deviations]
+
+
 def calculate_variance(values: Sequence[float], sample: bool = False) -> float:
     if not values:
         raise ValueError("데이터는 최소 1개 이상이어야 합니다.")
@@ -25,8 +31,7 @@ def calculate_variance(values: Sequence[float], sample: bool = False) -> float:
     if sample and len(values) < 2:
         raise ValueError("표본 분산은 데이터가 최소 2개 이상 필요합니다.")
 
-    mean = calculate_mean(values)
-    squared_deviations = [(value - mean) ** 2 for value in values]
+    squared_deviations = calculate_squared_deviations(values)
     divisor = len(values) - 1 if sample else len(values)
     return sum(squared_deviations) / divisor
 
@@ -39,7 +44,7 @@ def calculate_standard_deviation(values: Sequence[float], sample: bool = False) 
 def print_statistics(values: Sequence[float]) -> None:
     mean = calculate_mean(values)
     deviations = calculate_deviations(values, mean)
-    squared_deviations = [deviation**2 for deviation in deviations]
+    squared_deviations = calculate_squared_deviations(values)
 
     print("=== 편차 / 분산 / 표준편차 실습 ===")
     print(f"원본 데이터: {values}")
