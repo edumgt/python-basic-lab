@@ -21,7 +21,7 @@ def calculate_deviations(values: Sequence[float], mean: float) -> list[float]:
 def calculate_squared_deviations(values: Sequence[float]) -> list[float]:
     mean = calculate_mean(values)
     deviations = calculate_deviations(values, mean)
-    return [deviation**2 for deviation in deviations]
+    return [math.pow(deviation, 2) for deviation in deviations]
 
 
 def calculate_variance(values: Sequence[float], sample: bool = False) -> float:
