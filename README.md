@@ -35,7 +35,8 @@ $$A\mathbf{x} = \mathbf{b}$$
 │  ├─ id_masker.py                  # OCR 기반 주민번호 마스킹
 │  └─ subtitle_remover.py           # 영상 자막 인페인팅 제거
 ├─ lab_stats/                       # 통계 기초 랩
-│  └─ statistics_basics.py          # 편차/분산/표준편차 실습
+│  ├─ statistics_basics.py          # 편차/분산/표준편차 실습
+│  └─ probability_basics.py         # 경우의 수/확률/덧셈정리/곱셈정리 실습
 ├─ backend/
 │  ├─ Dockerfile
 │  ├─ requirements.txt
@@ -78,7 +79,8 @@ $$A\mathbf{x} = \mathbf{b}$$
 │  ├─ 027.md                        # 거듭제곱/지수/제곱근/방정식/행렬 기초
 │  ├─ 028.md                        # 이차방정식/미지수/계수/상수항/근의 공식
 │  ├─ 029.md                        # 일차함수/그래프/좌표평면/x축/y축/기울기/절편
-│  └─ 030.md                        # 도수분포표/스터지스공식/변량/계급/도수/히스토그램
+│  ├─ 030.md                        # 도수분포표/스터지스공식/변량/계급/도수/히스토그램
+│  └─ 031.md                        # 경우의수/확률/확률의덧셈/확률의곱셈
 ├─ mypy.ini                         # mypy 설정
 ├─ docker-compose.yml
 ├─ requirements.txt
@@ -98,6 +100,7 @@ $$A\mathbf{x} = \mathbf{b}$$
 | `lab_image` | `id_masker.py` | OCR로 주민번호 탐지 후 뒷자리 마스킹 | `pytesseract`, `opencv`, `regex` | `python lab_image/id_masker.py` |
 | `lab_image` | `subtitle_remover.py` | 영상 하단 자막 영역 인페인팅 제거 후 재조립 | `opencv`, `ffmpeg` | `python lab_image/subtitle_remover.py [mp4]` |
 | `lab_stats` | `statistics_basics.py` | 편차·분산·표준편차를 예제로 계산하고 해석 | Python 표준 라이브러리 (`math`) | `python lab_stats/statistics_basics.py` |
+| `lab_stats` | `probability_basics.py` | 경우의 수, 확률, 덧셈정리, 곱셈정리를 예제로 계산하고 해석 | Python 표준 라이브러리 (`math`) | `python lab_stats/probability_basics.py` |
 
 ## 기술 스택 상세
 
@@ -144,6 +147,9 @@ python lab_video_analysis/video_pipeline.py
 
 # 5) 통계 기초 실습
 python lab_stats/statistics_basics.py
+
+# 6) 경우의 수 / 확률 기초 실습
+python lab_stats/probability_basics.py
 ```
 
 ## Mypy 타입 검사
@@ -315,7 +321,7 @@ mypy <파일 또는 패키지>
 
 ---
 
-### 📄 005 ~ 030 — 파이썬 확장 학습 문서
+### 📄 005 ~ 031 — 파이썬 확장 학습 문서
 
 문법/스타일 기초 이후 학습을 위해 다음 주제를 순차적으로 추가했습니다.
 
@@ -345,6 +351,7 @@ mypy <파일 또는 패키지>
 - [`docs/028.md`](docs/028.md): 이차함수·이차방정식, 미지수, 계수, 상수항, 판별식, 근의 공식
 - [`docs/029.md`](docs/029.md): 일차함수, 그래프, 좌표평면, 좌표, x축, y축, 기울기, 절편, 증가량
 - [`docs/030.md`](docs/030.md): 도수분포표, 스터지스 공식, 변량, 계급, 도수, 히스토그램
+- [`docs/031.md`](docs/031.md): 경우의 수, 확률, 확률의 덧셈, 확률의 곱셈
 
 ---
 
