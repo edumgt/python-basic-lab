@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 
 
-def calculate_mean(values: list[float]) -> float:
+def calculate_mean(values: Sequence[float]) -> float:
     return sum(values) / len(values)
 
 
-def calculate_deviations(values: list[float], mean: float) -> list[float]:
+def calculate_deviations(values: Sequence[float], mean: float) -> list[float]:
     return [value - mean for value in values]
 
 
-def calculate_variance(values: list[float], sample: bool = False) -> float:
+def calculate_variance(values: Sequence[float], sample: bool = False) -> float:
     if not values:
         raise ValueError("데이터는 최소 1개 이상이어야 합니다.")
 
@@ -24,12 +25,12 @@ def calculate_variance(values: list[float], sample: bool = False) -> float:
     return sum(squared_deviations) / divisor
 
 
-def calculate_standard_deviation(values: list[float], sample: bool = False) -> float:
+def calculate_standard_deviation(values: Sequence[float], sample: bool = False) -> float:
     variance = calculate_variance(values, sample=sample)
     return math.sqrt(variance)
 
 
-def print_statistics(values: list[float]) -> None:
+def print_statistics(values: Sequence[float]) -> None:
     mean = calculate_mean(values)
     deviations = calculate_deviations(values, mean)
     squared_deviations = [deviation**2 for deviation in deviations]
