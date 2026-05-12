@@ -40,6 +40,8 @@
 ├─ lab_image/                       # 이미지 처리 랩
 │  ├─ id_masker.py                  # OCR 기반 주민번호 마스킹
 │  └─ subtitle_remover.py           # 영상 자막 인페인팅 제거
+├─ lab_stats/                       # 통계 기초 랩
+│  └─ statistics_basics.py          # 편차/분산/표준편차 실습
 ├─ backend/
 │  ├─ Dockerfile
 │  ├─ requirements.txt
@@ -74,7 +76,8 @@
 │  ├─ 019.md                        # 다형성/덕 타이핑/ABC
 │  ├─ 020.md                        # 캡슐화/property
 │  ├─ 021.md                        # classmethod/staticmethod
-│  └─ 022.md                        # 특수 메서드/dataclass
+│  ├─ 022.md                        # 특수 메서드/dataclass
+│  └─ 023.md                        # 편차/분산/표준편차
 ├─ mypy.ini                         # mypy 설정
 ├─ docker-compose.yml
 ├─ requirements.txt
@@ -93,6 +96,7 @@
 | `lab_video_analysis` | `video_pipeline.py` | 녹화 종료 후 최신 mp4를 자동 탐색해 captioner 실행 | `subprocess`, 오케스트레이션 | `python lab_video_analysis/video_pipeline.py` |
 | `lab_image` | `id_masker.py` | OCR로 주민번호 탐지 후 뒷자리 마스킹 | `pytesseract`, `opencv`, `regex` | `python lab_image/id_masker.py` |
 | `lab_image` | `subtitle_remover.py` | 영상 하단 자막 영역 인페인팅 제거 후 재조립 | `opencv`, `ffmpeg` | `python lab_image/subtitle_remover.py [mp4]` |
+| `lab_stats` | `statistics_basics.py` | 편차·분산·표준편차를 예제로 계산하고 해석 | Python 표준 라이브러리 (`math`) | `python lab_stats/statistics_basics.py` |
 
 ## 기술 스택 상세
 
@@ -136,6 +140,9 @@ python lab_video_analysis/video_captioner.py z_20260301_120000.mp4 --frame-inter
 
 # 4) 녹화 후 자동 분석 파이프라인
 python lab_video_analysis/video_pipeline.py
+
+# 5) 통계 기초 실습
+python lab_stats/statistics_basics.py
 ```
 
 ## Mypy 타입 검사
@@ -307,7 +314,7 @@ mypy <파일 또는 패키지>
 
 ---
 
-### 📄 005 ~ 022 — 파이썬 확장 학습 문서
+### 📄 005 ~ 023 — 파이썬 확장 학습 문서
 
 문법/스타일 기초 이후 학습을 위해 다음 주제를 순차적으로 추가했습니다.
 
@@ -329,6 +336,7 @@ mypy <파일 또는 패키지>
 - [`docs/020.md`](docs/020.md): 캡슐화와 `property`
 - [`docs/021.md`](docs/021.md): `@classmethod`와 `@staticmethod`
 - [`docs/022.md`](docs/022.md): 특수 메서드와 `dataclass`
+- [`docs/023.md`](docs/023.md): 편차, 분산, 표준편차
 
 ---
 
