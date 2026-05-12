@@ -77,7 +77,8 @@
 │  ├─ 020.md                        # 캡슐화/property
 │  ├─ 021.md                        # classmethod/staticmethod
 │  ├─ 022.md                        # 특수 메서드/dataclass
-│  └─ 023.md                        # 편차/분산/표준편차
+│  ├─ 023.md                        # 편차/분산/표준편차
+│  └─ 024.md                        # 튜플/딕셔너리/집합 기초
 ├─ mypy.ini                         # mypy 설정
 ├─ docker-compose.yml
 ├─ requirements.txt
@@ -314,7 +315,7 @@ mypy <파일 또는 패키지>
 
 ---
 
-### 📄 005 ~ 023 — 파이썬 확장 학습 문서
+### 📄 005 ~ 024 — 파이썬 확장 학습 문서
 
 문법/스타일 기초 이후 학습을 위해 다음 주제를 순차적으로 추가했습니다.
 
@@ -337,6 +338,7 @@ mypy <파일 또는 패키지>
 - [`docs/021.md`](docs/021.md): `@classmethod`와 `@staticmethod`
 - [`docs/022.md`](docs/022.md): 특수 메서드와 `dataclass`
 - [`docs/023.md`](docs/023.md): 편차, 분산, 표준편차
+- [`docs/024.md`](docs/024.md): 튜플, 딕셔너리, 집합 기초
 
 ---
 
