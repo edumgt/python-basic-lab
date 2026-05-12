@@ -56,7 +56,8 @@
 │  ├─ 023.md                        # 편차/분산/표준편차
 │  ├─ 024.md                        # 튜플/딕셔너리/집합 기초
 │  ├─ 025.md                        # matplotlib 기초 (pyplot/plot/grid/show)
-│  └─ 026.md                        # pandas 기초와 Series 핵심 사용법
+│  ├─ 026.md                        # pandas 기초와 Series 핵심 사용법
+│  └─ 027.md                        # 거듭제곱/지수/제곱근/방정식/행렬 기초
 ├─ mypy.ini                         # mypy 설정
 ├─ docker-compose.yml
 ├─ requirements.txt
@@ -293,7 +294,7 @@ mypy <파일 또는 패키지>
 
 ---
 
-### 📄 005 ~ 026 — 파이썬 확장 학습 문서
+### 📄 005 ~ 027 — 파이썬 확장 학습 문서
 
 문법/스타일 기초 이후 학습을 위해 다음 주제를 순차적으로 추가했습니다.
 
@@ -319,6 +320,7 @@ mypy <파일 또는 패키지>
 - [`docs/024.md`](docs/024.md): 튜플, 딕셔너리, 집합 기초
 - [`docs/025.md`](docs/025.md): matplotlib 기초 (`pyplot`, `plot`, `grid`, `show`)
 - [`docs/026.md`](docs/026.md): pandas 기초와 `Series` 핵심 사용법
+- [`docs/027.md`](docs/027.md): 거듭제곱, 지수, 제곱근, 일차방정식, 연립일차방정식, 행렬 기초
 
 ---
 
