@@ -33,7 +33,7 @@ python lab_pdf/pdf_cropmark.py
 python lab_video_capture/screen_recorder.py
 
 # AI 캡션 + TTS
-python lab_video_analysis/video_captioner.py <input.mp4> --frame-interval 2
+python lab_video_analysis/video_captioner.py sample.mp4 --frame-interval 2
 
 # 통계/확률 기초
 python lab_stats/statistics_basics.py
@@ -220,13 +220,13 @@ mypy lab_pdf/ lab_video_capture/ lab_video_analysis/ lab_image/ backend/app/main
 
 ## 최근 실행 흐름 보완 사항
 
-1. `lab_video_analysis/video_captioner.py`
-2. CLI 인자 지원(`video_path`, `--frame-interval`, `--font-path`, `--font-size`, `--tts-lang`)
-3. 영상 미지정 시 최신 녹화본(`z_*.mp4`, `record_*.mp4`) 자동 탐색
-4. 캡션 중복 제거 후 요약 TTS 생성 및 ffmpeg 병합 처리
-5. `lab_video_analysis/video_pipeline.py`
-6. 녹화 후 최신 mp4 자동 탐색 → `video_captioner.py` 실행
-7. `sys.executable` 기반 하위 프로세스 실행으로 실행 환경 일관성 유지
+- `lab_video_analysis/video_captioner.py`
+  1. CLI 인자 지원(`video_path`, `--frame-interval`, `--font-path`, `--font-size`, `--tts-lang`)
+  2. 영상 미지정 시 최신 녹화본(`z_*.mp4`, `record_*.mp4`) 자동 탐색
+  3. 캡션 중복 제거 후 요약 TTS 생성 및 ffmpeg 병합 처리
+- `lab_video_analysis/video_pipeline.py`
+  1. 녹화 후 최신 mp4 자동 탐색 → `video_captioner.py` 실행
+  2. `sys.executable` 기반 하위 프로세스 실행으로 실행 환경 일관성 유지
 
 ## FastAPI 백엔드 솔루션
 
