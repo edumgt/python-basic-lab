@@ -55,7 +55,8 @@
 │  ├─ 022.md                        # 특수 메서드/dataclass
 │  ├─ 023.md                        # 편차/분산/표준편차
 │  ├─ 024.md                        # 튜플/딕셔너리/집합 기초
-│  └─ 025.md                        # matplotlib 기초 (pyplot/plot/grid/show)
+│  ├─ 025.md                        # matplotlib 기초 (pyplot/plot/grid/show)
+│  └─ 026.md                        # pandas 기초와 Series 핵심 사용법
 ├─ mypy.ini                         # mypy 설정
 ├─ docker-compose.yml
 ├─ requirements.txt
@@ -292,7 +293,7 @@ mypy <파일 또는 패키지>
 
 ---
 
-### 📄 005 ~ 024 — 파이썬 확장 학습 문서
+### 📄 005 ~ 026 — 파이썬 확장 학습 문서
 
 문법/스타일 기초 이후 학습을 위해 다음 주제를 순차적으로 추가했습니다.
 
@@ -316,6 +317,8 @@ mypy <파일 또는 패키지>
 - [`docs/022.md`](docs/022.md): 특수 메서드와 `dataclass`
 - [`docs/023.md`](docs/023.md): 편차, 분산, 표준편차
 - [`docs/024.md`](docs/024.md): 튜플, 딕셔너리, 집합 기초
+- [`docs/025.md`](docs/025.md): matplotlib 기초 (`pyplot`, `plot`, `grid`, `show`)
+- [`docs/026.md`](docs/026.md): pandas 기초와 `Series` 핵심 사용법
 
 ---
 
