@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/workspace
     ports:
-      - "8000:8000"
+      - "8877:8000"
 
   frontend:
     build:
@@ -19,4 +19,4 @@ services:
     depends_on:
       - backend
     ports:
-      - "8080:80"
+      - "8878:80"

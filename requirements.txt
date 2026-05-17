@@ -1,3 +1,9 @@
+# PDF 처리 (최소 의존성)
 PyMuPDF==1.23.9
 reportlab==4.2.2
 PyPDF2==3.0.1
+pdf2docx
+
+# 서비스 레이어
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
