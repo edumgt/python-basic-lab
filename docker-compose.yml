@@ -7,16 +7,22 @@ services:
     environment:
       WORKSPACE_ROOT: /workspace
     volumes:
-      - .:/workspace
+    - .:/workspace
     ports:
-      - "8877:8000"
-
+    - 8877:8000
+    networks:
+    - shared-net
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
     container_name: pycap-frontend
     depends_on:
-      - backend
+    - backend
     ports:
-      - "8878:80"
+    - 8878:80
+    networks:
+    - shared-net
+networks:
+  shared-net:
+    external: true
