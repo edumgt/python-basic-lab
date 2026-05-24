@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2P Network Shooting Game – Lab</title>
+<style>
+/* ─────────────────────── Base ────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: #06060f;
+    color: #ebebeb;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* ─────────────────────── Canvas ─────────────────────── */
+canvas {
+    display: block;
+    border: 2px solid #5af0ff;
+    box-shadow: 0 0 30px #5af0ff44, 0 0 60px #5af0ff22;
+    image-rendering: pixelated;
+}
+
+/* ─────────────────────── Overlay UI ─────────────────── */
+#ui {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel {
+    background: rgba(8, 8, 20, 0.94);
+    border: 2px solid #5af0ff;
+    border-radius: 14px;
+    padding: 32px 48px;
+    text-align: center;
+    pointer-events: all;
+    box-shadow: 0 0 40px #5af0ff33;
+    max-width: 480px;
+    width: 92%;
+}
+
+/* ─────────────────────── Typography ─────────────────── */
+h1 { font-size: 1.9em; margin-bottom: 10px; }
+h2 { font-size: 1.25em; margin-bottom: 6px; }
+p  { margin: 7px 0; font-size: 0.88em; color: #a0a0a0; line-height: 1.5; }
+
+.neon        { color: #5af0ff; text-shadow: 0 0 12px #5af0ff88; }
+.neon-yellow { color: #ffdc5a; text-shadow: 0 0 12px #ffdc5a88; }
+.neon-red    { color: #ff505a; text-shadow: 0 0 12px #ff505a88; }
+.neon-purple { color: #d25aff; text-shadow: 0 0 12px #d25aff88; }
+.neon-green  { color: #5affa0; text-shadow: 0 0 12px #5affa088; }
+
+.divider {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 16px 0;
+}
+
+/* ─────────────────────── Buttons ─────────────────────── */
+button {
+    background: #5af0ff1a;
+    border: 2px solid #5af0ff;
+    color: #5af0ff;
+    padding: 12px 36px;
+    font-size: 1.05em;
+    font-family: inherit;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+}
+button:hover:not(:disabled) {
+    background: #5af0ff33;
+    box-shadow: 0 0 18px #5af0ff77;
+}
+button:disabled {
+    color: #446;
+    border-color: #446;
+    background: transparent;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* ─────────────────────── Status dot ──────────────────── */
+.dot { display: inline-block; width: 10px; height: 10px;
+       border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.dot-on  { background: #5affa0; box-shadow: 0 0 6px #5affa0; }
+.dot-off { background: #444; }
+
+/* ─────────────────────── Lobby player rows ──────────── */
+.player-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; margin: 6px 0;
+    border-radius: 8px; border: 1px solid #333;
+    font-size: 0.85em;
+}
+.pr-p1 { border-color: #5af0ff44; background: #5af0ff0a; }
+.pr-p2 { border-color: #d25aff44; background: #d25aff0a; }
+
+/* ─────────────────────── Controls hint ──────────────── */
+.controls-grid {
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 4px 12px; text-align: left;
+    font-size: 0.78em; color: #666; margin-top: 8px;
+}
+.controls-grid span:first-child { color: #888; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<canvas id="gc"></canvas>
+
+<!-- ─── Overlay panels ─────────────────────────────────── -->
+<div id="ui">
+
+    <!-- Connecting -->
+    <div id="screen-connect" class="panel">
+        <h1 class="neon">🚀 2P Shooting Lab</h1>
+        <p id="conn-status">서버에 연결 중… Connecting to server…</p>
+        <p style="margin-top:12px; color:#555; font-size:0.78em;">ws://<span id="conn-host"></span>/ws</p>
+    </div>
+
+    <!-- Lobby -->
+    <div id="screen-lobby" class="panel" style="display:none">
+        <h1 class="neon">2P SHOOTING GAME</h1>
+        <h2 id="pid-label" class="neon-yellow" style="margin-bottom:14px;">Player ?</h2>
+
+        <div class="player-row pr-p1">
+            <span><span id="p1-dot" class="dot dot-off"></span>
+                  <span class="neon" style="font-size:0.95em;">PLAYER 1</span></span>
+            <span id="p1-ready-label" style="color:#444">대기 중…</span>
+        </div>
+        <div class="player-row pr-p2">
+            <span><span id="p2-dot" class="dot dot-off"></span>
+                  <span class="neon-purple" style="font-size:0.95em;">PLAYER 2</span></span>
+            <span id="p2-ready-label" style="color:#444">대기 중…</span>
+        </div>
+
+        <p id="lobby-hint" style="margin-top:12px; color:#aaa;">
+            상대방이 접속하기를 기다리는 중…
+        </p>
+
+        <button id="btn-ready" onclick="sendReady()" disabled>
+            ▶ READY / START
+        </button>
+
+        <hr class="divider">
+        <div class="controls-grid">
+            <span>← →</span>       <span>좌우 이동 / Move</span>
+            <span>SPACE (홀드)</span><span>연속 발사 / Shoot (hold)</span>
+            <span>X</span>          <span>폭탄 / Bomb</span>
+        </div>
+    </div>
+
+    <!-- Game Over -->
+    <div id="screen-gameover" class="panel" style="display:none">
+        <h1 class="neon-red">GAME OVER</h1>
+        <p id="go-scores" class="neon-yellow" style="font-size:1.05em; white-space:pre-line;"></p>
+        <button onclick="sendRestart()">↺ 다시하기 / RESTART</button>
+        <p style="margin-top:10px; font-size:0.75em; color:#555;">
+            두 플레이어가 다시 READY를 눌러야 시작됩니다.<br>
+            Both players must press READY again.
+        </p>
+    </div>
+
+</div><!-- #ui -->
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ① Config
+   ════════════════════════════════════════════════════════════ */
+const GAME_W = 600, GAME_H = 800;
+
+// WebSocket URL — same host:port as the page
+const WS_URL = `ws://${location.host}/ws`;
+
+/* ════════════════════════════════════════════════════════════
+   ② Canvas setup + responsive scaling
+   ════════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('gc');
+const ctx    = canvas.getContext('2d');
+canvas.width  = GAME_W;
+canvas.height = GAME_H;
+
+function resizeCanvas() {
+    const scale = Math.min(
+        (window.innerWidth  - 40) / GAME_W,
+        (window.innerHeight - 40) / GAME_H
+    );
+    canvas.style.width  = Math.floor(GAME_W * scale) + 'px';
+    canvas.style.height = Math.floor(GAME_H * scale) + 'px';
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+/* ════════════════════════════════════════════════════════════
+   ③ Client-side starfield  (visual only — no game logic)
+   ════════════════════════════════════════════════════════════ */
+const STAR_COUNT = 200;
+const stars = Array.from({ length: STAR_COUNT }, () => ({
+    x:   Math.random() * GAME_W,
+    y:   Math.random() * GAME_H,
+    spd: 40 + Math.random() * 190,
+    b:   130 + Math.floor(Math.random() * 125),
+}));
+let lastStarTime = performance.now();
+
+function updateStars(now) {
+    const dt = Math.min((now - lastStarTime) / 1000, 0.05);
+    lastStarTime = now;
+    for (const s of stars) {
+        s.y += s.spd * dt;
+        if (s.y > GAME_H) {
+            s.y   = -2;
+            s.x   = Math.random() * GAME_W;
+            s.spd = 40 + Math.random() * 190;
+            s.b   = 130 + Math.floor(Math.random() * 125);
+        }
+    }
+}
+
+function drawStarfield() {
+    ctx.fillStyle = '#06060f';
+    ctx.fillRect(0, 0, GAME_W, GAME_H);
+    for (const s of stars) {
+        const h = s.b.toString(16).padStart(2, '0');
+        ctx.fillStyle = `#${h}${h}${h}`;
+        ctx.fillRect(Math.floor(s.x), Math.floor(s.y), 2, 2);
+    }
+}
+
+/* ════════════════════════════════════════════════════════════
+   ④ State
+   ════════════════════════════════════════════════════════════ */
+let myPid     = null;   // 'p1' or 'p2'
+let gameState = null;   // latest state from server
+let ws        = null;
+
+// Current keyboard state (sent to server at INPUT_HZ)
+const keys = { left: false, right: false, shoot: false, bomb: false };
+
+/* ════════════════════════════════════════════════════════════
+   ⑤ WebSocket — connection & message handling
+   ════════════════════════════════════════════════════════════ */
+document.getElementById('conn-host').textContent = location.host;
+
+function connect() {
+    ws = new WebSocket(WS_URL);
+
+    ws.addEventListener('open', () => {
+        console.log('[WS] connected');
+        document.getElementById('conn-status').textContent =
+            '연결됨! 플레이어 슬롯 배정 중… Connected!';
+    });
+
+    ws.addEventListener('message', e => {
+        let msg;
+        try { msg = JSON.parse(e.data); } catch { return; }
+
+        if (msg.type === 'joined') {
+            myPid = msg.pid;
+            showScreen('lobby');
+            document.getElementById('pid-label').textContent =
+                myPid === 'p1'
+                    ? 'PLAYER 1  (파란 함선 🔵)'
+                    : 'PLAYER 2  (보라 함선 🟣)';
+            updateLobbyDots({ p1: { ready: false }, p2: { ready: false } });
+
+        } else if (msg.type === 'full') {
+            document.getElementById('conn-status').innerHTML =
+                '<span class="neon-red">방이 꽉 찼습니다 (최대 2명) / Room is full.</span>';
+
+        } else if (msg.type === 'state') {
+            gameState = msg.data;
+            onStateUpdate(msg.data);
+        }
+    });
+
+    ws.addEventListener('close', () => {
+        console.log('[WS] closed');
+        showScreen('connect');
+        document.getElementById('conn-status').textContent =
+            '연결이 끊겼습니다. 페이지를 새로 고침하세요. / Disconnected. Reload page.';
+    });
+
+    ws.addEventListener('error', () => {
+        document.getElementById('conn-status').textContent =
+            '연결 오류 / Connection error. Is server.py running?';
+    });
+}
+
+function sendMsg(obj) {
+    if (ws && ws.readyState === WebSocket.OPEN)
+        ws.send(JSON.stringify(obj));
+}
+
+function sendInput() {
+    sendMsg({ type: 'input', left: keys.left, right: keys.right,
+              shoot: keys.shoot, bomb: keys.bomb });
+    keys.bomb = false;   // consume one-shot flag
+}
+
+function sendReady() {
+    sendMsg({ type: 'ready' });
+    const btn = document.getElementById('btn-ready');
+    btn.disabled    = true;
+    btn.textContent = '✓ 준비 완료 / READY';
+}
+
+function sendRestart() {
+    sendMsg({ type: 'restart' });
+    showScreen('lobby');
+    const btn = document.getElementById('btn-ready');
+    btn.disabled    = false;
+    btn.textContent = '▶ READY / START';
+}
+
+/* ════════════════════════════════════════════════════════════
+   ⑥ UI screen management
+   ════════════════════════════════════════════════════════════ */
+function showScreen(name) {
+    ['connect', 'lobby', 'gameover'].forEach(s => {
+        const el = document.getElementById('screen-' + s);
+        if (el) el.style.display = s === name ? 'block' : 'none';
+    });
+}
+
+function onStateUpdate(state) {
+    if (state.phase === 'lobby') {
+        showScreen('lobby');
+        updateLobbyUI(state);
+    } else if (state.phase === 'gameover') {
+        showScreen('gameover');
+        updateGameOverUI(state);
+    } else {
+        // countdown or playing — hide all overlays so canvas is visible
+        showScreen(null);
+    }
+}
+
+function updateLobbyDots(players) {
+    const labels = ['p1', 'p2'];
+    for (const pid of labels) {
+        const dot   = document.getElementById(pid + '-dot');
+        const label = document.getElementById(pid + '-ready-label');
+        const p     = players?.[pid];
+        if (!p) continue;
+        if (dot)   dot.className   = 'dot ' + (p.ready ? 'dot-on' : 'dot-off');
+        if (label) label.textContent = p.ready ? '✓ 준비 / READY' : '대기 중… waiting';
+        if (label) label.style.color = p.ready ? '#5affa0' : '#444';
+    }
+}
+
+function updateLobbyUI(state) {
+    updateLobbyDots(state.players);
+
+    const p = state.players || {};
+    const r1 = p.p1?.ready, r2 = p.p2?.ready;
+    let hint;
+    if (!r1 && !r2)       hint = '두 플레이어 모두 READY를 눌러주세요 / Both press START';
+    else if (r1 && !r2)   hint = 'P1 준비완료! P2를 기다리는 중… / Waiting for P2…';
+    else if (!r1 && r2)   hint = 'P2 준비완료! P1을 기다리는 중… / Waiting for P1…';
+    else                  hint = '🚀 모두 준비! 곧 시작됩니다… / All ready! Starting…';
+    document.getElementById('lobby-hint').textContent = hint;
+
+    const btn = document.getElementById('btn-ready');
+    if (myPid && p[myPid] && !p[myPid].ready) {
+        btn.disabled = false;
+    }
+}
+
+function updateGameOverUI(state) {
+    const p  = state.players || {};
+    const s1 = p.p1?.score ?? 0;
+    const s2 = p.p2?.score ?? 0;
+    let txt  = `P1 점수: ${s1}\nP2 점수: ${s2}\n`;
+    if      (s1 > s2) txt += '\n🏆 PLAYER 1 승리! / Wins!';
+    else if (s2 > s1) txt += '\n🏆 PLAYER 2 승리! / Wins!';
+    else              txt += '\n🤝 무승부! / Draw!';
+    document.getElementById('go-scores').textContent = txt;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ⑦ Keyboard input
+   ════════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+    if (e.code === 'ArrowLeft')  { keys.left  = true; e.preventDefault(); }
+    if (e.code === 'ArrowRight') { keys.right = true; e.preventDefault(); }
+    if (e.code === 'Space')      { keys.shoot = true; e.preventDefault(); }
+    if (e.code === 'KeyX')       { keys.bomb  = true; }
+});
+document.addEventListener('keyup', e => {
+    if (e.code === 'ArrowLeft')  keys.left  = false;
+    if (e.code === 'ArrowRight') keys.right = false;
+    if (e.code === 'Space')      keys.shoot = false;
+});
+
+/* ════════════════════════════════════════════════════════════
+   ⑧ Canvas rendering
+   ════════════════════════════════════════════════════════════ */
+
+// ── Colour palette ─────────────────────────────────────────
+const C = {
+    p1:     '#468cff',  p1g: '#5af0ff',
+    p2:     '#b050e8',  p2g: '#d25aff',
+    grunt:  '#ff505a',
+    diver:  '#ff9b50',
+    shooter:'#d25aff',
+    enemy_eye: '#ffdc5a',
+    pbul_p1:'#5af0ff',  pbul_p2:'#d25aff',
+    ebul:   '#ff505a',
+    laser:  '#5affa0',
+    boss:   '#d25aff',
+    MULTI:  '#5af0ff',  SHIELD: '#d25aff',
+    BOMB:   '#ff9b50',  RAPID:  '#ffdc5a',
+    LASER:  '#5affa0',
+};
+
+// ── Drawing helpers ─────────────────────────────────────────
+function glow(color, blur) { ctx.shadowColor = color; ctx.shadowBlur = blur; }
+function noGlow()           { ctx.shadowBlur = 0; }
+
+function drawPlayerShip(x, y, pid, inv, rapid, laser) {
+    // blink when invincible
+    if (inv && Math.floor(performance.now() / 55) % 2 === 0) return;
+
+    const body = pid === 'p1' ? C.p1  : C.p2;
+    const gl   = pid === 'p1' ? C.p1g : C.p2g;
+
+    ctx.save();
+    ctx.translate(x, y);
+    glow(gl, rapid ? 20 : 10);
+
+    // Ship body (triangle pointing up)
+    ctx.beginPath();
+    ctx.moveTo(0, -23); ctx.lineTo(-28, 23); ctx.lineTo(28, 23);
+    ctx.closePath();
+    ctx.fillStyle = body;
+    ctx.fill();
+
+    // Wing accent
+    ctx.beginPath();
+    ctx.moveTo(0, -16); ctx.lineTo(-12, -2); ctx.lineTo(12, -2);
+    ctx.closePath();
+    ctx.fillStyle = gl;
+    ctx.fill();
+
+    // Cockpit
+    ctx.fillStyle = '#1a1a38';
+    ctx.fillRect(-4, 0, 8, 14);
+
+    // Laser trail
+    if (laser) {
+        glow(C.laser, 18);
+        ctx.strokeStyle = C.laser;
+        ctx.lineWidth   = 3;
+        ctx.setLineDash([8, 5]);
+        ctx.beginPath();
+        ctx.moveTo(0, -24); ctx.lineTo(0, -(GAME_H + 50));
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    ctx.restore();
+    noGlow();
+}
+
+function drawEnemy(x, y, kind, hp) {
+    const col = kind === 'DIVER' ? C.diver : kind === 'SHOOTER' ? C.shooter : C.grunt;
+    // Tint red when hp is low (hp=1 is damaged, original hp is higher for waves > 5)
+    const displayCol = hp === 1 ? '#ff8888' : col;
+    ctx.save();
+    ctx.translate(x, y);
+    glow(displayCol, 8);
+    ctx.fillStyle = displayCol;
+    ctx.beginPath();
+    ctx.moveTo(0, -16); ctx.lineTo(-21, 16); ctx.lineTo(21, 16);
+    ctx.closePath();
+    ctx.fill();
+    // Eye
+    ctx.fillStyle = C.enemy_eye;
+    ctx.beginPath(); ctx.arc(0, -6, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    noGlow();
+}
+
+function drawBoss(boss) {
+    if (!boss) return;
+    const {x, y, hp, maxHp} = boss;
+    ctx.save();
+    ctx.translate(x, y + 47);
+    glow(C.boss, 22);
+    ctx.fillStyle = C.boss;
+    ctx.beginPath();
+    ctx.moveTo(0, -47); ctx.lineTo(-85, 47); ctx.lineTo(85, 47);
+    ctx.closePath();
+    ctx.fill();
+    // Cockpit block
+    ctx.fillStyle = '#28285a';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-68, 8, 136, 30, 10);
+    else               ctx.rect(-68, 8, 136, 30);
+    ctx.fill();
+    // Eye
+    ctx.fillStyle = C.enemy_eye;
+    ctx.beginPath(); ctx.arc(0, -16, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    noGlow();
+}
+
+function drawPlayerBullet(x, y, owner, laser) {
+    ctx.save();
+    const col = owner === 'p1' ? C.pbul_p1 : C.pbul_p2;
+    if (laser) {
+        glow(C.laser, 14);
+        ctx.strokeStyle = C.laser;
+        ctx.lineWidth   = 5;
+        ctx.beginPath();
+        ctx.moveTo(x, y - 10); ctx.lineTo(x, y + 10);
+        ctx.stroke();
+    } else {
+        glow(col, 6);
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.moveTo(x, y - 8); ctx.lineTo(x - 3, y + 8); ctx.lineTo(x + 3, y + 8);
+        ctx.closePath();
+        ctx.fill();
+    }
+    ctx.restore();
+    noGlow();
+}
+
+function drawEnemyBullet(x, y) {
+    ctx.save();
+    glow(C.ebul, 6);
+    ctx.fillStyle = C.ebul;
+    ctx.beginPath();
+    ctx.moveTo(x, y + 8); ctx.lineTo(x - 3, y - 8); ctx.lineTo(x + 3, y - 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    noGlow();
+}
+
+function drawPowerup(x, y, type) {
+    const col = C[type] || '#fff';
+    ctx.save();
+    glow(col, 14);
+    ctx.fillStyle = col;
+    ctx.beginPath(); ctx.arc(x, y, 13, 0, Math.PI * 2); ctx.fill();
+    noGlow();
+    ctx.fillStyle   = '#000';
+    ctx.font        = 'bold 9px monospace';
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(type[0], x, y);
+    ctx.restore();
+}
+
+// ── HUD ────────────────────────────────────────────────────
+function drawHUD(state) {
+    const {players, wave, boss} = state;
+    const p1 = players?.p1, p2 = players?.p2;
+    if (!p1 || !p2) return;
+
+    ctx.save();
+    ctx.shadowBlur = 0;
+
+    // ── Top bar ──────────────────────────────────────────────
+    ctx.fillStyle = 'rgba(8,8,20,0.78)';
+    ctx.fillRect(12, 10, GAME_W - 24, 52);
+    ctx.strokeStyle = '#5af0ff'; ctx.lineWidth = 2;
+    ctx.strokeRect(12, 10, GAME_W - 24, 52);
+
+    ctx.font = '18px monospace'; ctx.textBaseline = 'top';
+
+    ctx.fillStyle = C.p1g;  ctx.textAlign = 'left';
+    ctx.fillText(`P1 ${p1.score}`, 26, 22);
+
+    ctx.fillStyle = C.p2g;  ctx.textAlign = 'right';
+    ctx.fillText(`P2 ${p2.score}`, GAME_W - 26, 22);
+
+    ctx.fillStyle = '#ffdc5a'; ctx.textAlign = 'center';
+    ctx.fillText(`WAVE ${wave}`, GAME_W / 2, 22);
+
+    // ── Left panel (P1) ──────────────────────────────────────
+    drawPlayerPanel(p1, 12, 72, C.p1g, myPid === 'p1');
+
+    // ── Right panel (P2) ─────────────────────────────────────
+    drawPlayerPanel(p2, GAME_W - 248, 72, C.p2g, myPid === 'p2');
+
+    // ── Boss HP bar ───────────────────────────────────────────
+    if (boss) {
+        ctx.fillStyle = 'rgba(8,8,20,0.82)';
+        ctx.fillRect(GAME_W / 2 - 220, 72, 440, 26);
+        ctx.strokeStyle = C.boss; ctx.lineWidth = 2;
+        ctx.strokeRect(GAME_W / 2 - 220, 72, 440, 26);
+        const bw = Math.max(0, 420 * boss.hp / boss.maxHp);
+        ctx.fillStyle = C.boss;
+        ctx.fillRect(GAME_W / 2 - 210, 78, bw, 14);
+        ctx.fillStyle = '#ebebeb'; ctx.font = '13px monospace';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.fillText('BOSS', GAME_W / 2 - 225, 76);
+    }
+
+    ctx.restore();
+}
+
+function drawPlayerPanel(p, x, y, col, isMe) {
+    const w = 232, h = 148;
+    ctx.fillStyle = 'rgba(8,8,20,0.78)';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = col;
+    ctx.lineWidth   = isMe ? 2.5 : 1.5;
+    ctx.strokeRect(x, y, w, h);
+
+    ctx.font = '14px monospace'; ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+
+    // HP label + bar
+    ctx.fillStyle = '#ccc';
+    ctx.fillText('HP', x + 8, y + 10);
+    ctx.fillStyle = '#222';
+    ctx.fillRect(x + 36, y + 12, 178, 14);
+    ctx.fillStyle = '#5affa0';
+    ctx.fillRect(x + 36, y + 12, Math.max(0, 178 * p.hp / p.maxHp), 14);
+    ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+    ctx.strokeRect(x + 36, y + 12, 178, 14);
+
+    ctx.fillStyle = col;
+    ctx.fillText(`LIVES  ${p.lives}`,  x + 8, y + 34);
+    ctx.fillText(`SHIELD ${p.shield}`, x + 8, y + 54);
+    ctx.fillText(`BOMB   ${p.bombs}`,  x + 8, y + 74);
+
+    // Multi-shot dots
+    ctx.fillStyle = '#ccc';
+    ctx.fillText('MULTI', x + 8, y + 94);
+    for (let i = 0; i < 5; i++) {
+        ctx.fillStyle = i < p.multi ? col : '#2a2a3a';
+        ctx.beginPath();
+        ctx.arc(x + 74 + i * 18, y + 102, 7, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Active powerup indicators
+    let yy = y + 120;
+    if (p.rapid) {
+        ctx.fillStyle = '#ffdc5a';
+        ctx.fillText('⚡RAPID', x + 8, yy); yy += 18;
+    }
+    if (p.laser) {
+        ctx.fillStyle = C.laser;
+        ctx.fillText('↑LASER', x + 8, yy);
+    }
+}
+
+// ── Countdown overlay ──────────────────────────────────────
+function drawCountdown(n) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0, 0, GAME_W, GAME_H);
+
+    glow('#ffdc5a', 50);
+    ctx.fillStyle   = '#ffdc5a';
+    ctx.font        = 'bold 130px monospace';
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(n > 0 ? String(n) : 'GO!', GAME_W / 2, GAME_H / 2);
+    ctx.restore();
+    noGlow();
+}
+
+// ── Master render function ─────────────────────────────────
+function renderFrame(state, now) {
+    updateStars(now);
+    drawStarfield();
+
+    if (!state || state.phase === 'lobby') return;
+
+    // Enemies
+    for (const [x, y, kind, hp] of (state.en || []))
+        drawEnemy(x, y, kind, hp);
+
+    // Boss
+    if (state.boss) drawBoss(state.boss);
+
+    // Powerups
+    for (const [x, y, type] of (state.pu || []))
+        drawPowerup(x, y, type);
+
+    // Player bullets
+    for (const [x, y, owner, laser] of (state.pb || []))
+        drawPlayerBullet(x, y, owner, laser);
+
+    // Enemy bullets
+    for (const [x, y] of (state.eb || []))
+        drawEnemyBullet(x, y);
+
+    // Player ships
+    const players = state.players || {};
+    for (const [pid, p] of Object.entries(players)) {
+        if (p.lives > 0)
+            drawPlayerShip(p.x, p.y, pid, p.inv, p.rapid, p.laser);
+    }
+
+    // Countdown overlay
+    if (state.phase === 'countdown' && state.countdown >= 0)
+        drawCountdown(state.countdown);
+
+    // HUD (always on top)
+    drawHUD(state);
+}
+
+/* ════════════════════════════════════════════════════════════
+   ⑨ Client game loop  (render + throttled input send)
+
+   Lab note – Separation of concerns:
+     · Rendering runs at the browser's native refresh rate (rAF)
+     · Input is sent at a fixed rate (INPUT_HZ) independent of FPS
+     · Game physics lives entirely on the server
+   ════════════════════════════════════════════════════════════ */
+const INPUT_HZ    = 30;           // input messages / second
+const INPUT_DT    = 1 / INPUT_HZ;
+let   inputAccum  = 0;
+let   rafLast     = performance.now();
+
+function gameLoop(now) {
+    const dt = Math.min((now - rafLast) / 1000, 0.05);
+    rafLast = now;
+
+    inputAccum += dt;
+    if (inputAccum >= INPUT_DT) {
+        inputAccum -= INPUT_DT;
+        sendInput();
+    }
+
+    renderFrame(gameState, now);
+    requestAnimationFrame(gameLoop);
+}
+
+/* ════════════════════════════════════════════════════════════
+   ⑩ Boot
+   ════════════════════════════════════════════════════════════ */
+showScreen('connect');
+connect();
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
