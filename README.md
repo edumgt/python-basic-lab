@@ -1,11 +1,12 @@
 # python-basic-lab
 
-파이썬 기초 학습을 중심으로, **영상 편집·오디오 TTS·PDF/이미지 처리·통계 실습·FastAPI 실행 오케스트레이션**을 함께 다루는 실습형 저장소입니다.
+파이썬 기초 학습을 중심으로, **영상 편집·오디오 TTS·PDF/이미지 처리·통계 실습·게임 프로토타입·FastAPI 실행 오케스트레이션**을 함께 다루는 실습형 저장소입니다.
 
 ## 프로젝트 개요
 
 - 학습 문서(`docs/001.md` ~ `docs/031.md`)로 파이썬 기초/수학/통계 개념을 단계적으로 학습
 - 실습 스크립트(`lab_*`)로 영상 편집·오디오 생성·파일 처리·AI 분석 같은 자동화 작업 체험
+- `game/` 하위 프로젝트로 pygame/asyncio/socket 기반 게임 구조와 실시간 상호작용 예제 학습
 - `backend` + `frontend` + `docker-compose.yml`로 스크립트 실행을 API/UI 형태로 실습 가능
 
 ## 저장소 구조
@@ -58,6 +59,11 @@
 ├─ lab_stats/                   # 통계 기초 랩
 │  ├─ statistics_basics.py      # 편차/분산/표준편차 실습
 │  └─ probability_basics.py     # 경우의 수/확률 실습
+├─ game/                        # 게임 프로토타입 모음
+│  ├─ shooting/                 # asyncio WebSocket 슈팅 + pygame 싱글 버전
+│  ├─ tetris/                   # 방 생성/채팅/대전 테트리스
+│  ├─ jang-gi/                  # 한국 장기 규칙 구현
+│  └─ rpg/                      # 2D RPG 프로토타입
 ├─ backend/                     # FastAPI 백엔드
 │  └─ app/main.py               # 스크립트 실행 API
 ├─ frontend/                    # Nginx 정적 UI
@@ -147,6 +153,15 @@
 |---|---|---|
 | `statistics_basics.py` | 편차·분산·표준편차 예제 계산 | `math` |
 | `probability_basics.py` | 경우의 수, 확률, 덧셈/곱셈 정리 | `math` |
+
+### 게임 프로토타입 (`game`)
+
+| 프로젝트 | 주요 Python 파일 | 분석 내용 | 핵심 도구 |
+|---|---|---|---|
+| `shooting/` | `server.py`, `game.py` | `server.py`는 `aiohttp` 기반 2인 WebSocket 서버로 로비/레디체크/30FPS 서버 권위 물리/상태 브로드캐스트를 담당하고, `game.py`는 `pygame` 단일 플레이 버전으로 파티클·웨이브·보스·씬 전환 구조를 담습니다. | `aiohttp`, `asyncio`, `pygame` |
+| `tetris/` | `main.py`, `server.py`, `tet.py` | `server.py`는 TCP 로비 서버로 방 생성·입장·채팅·ready 동기화를 관리하고, `tet.py`는 `NetworkClient`·`Board`·`PlayerState`·`TetrisRoomClient`로 대전 로직과 UI를 분리하며, `main.py`는 클라이언트/서버 실행 진입점 역할을 합니다. | `socket`, `threading`, `pygame`, `pygame_gui` |
+| `jang-gi/` | `jang.py` | 단일 파일 안에서 장기판 렌더링, 기물별 이동 규칙, 장수 마주보기, 체크/체크메이트 판정, 턴 기반 입력 처리를 함께 구현한 규칙 중심 예제입니다. | `pygame` |
+| `rpg/` | `gg.py` | 무작위 타일 맵 생성 후 `Tile`·`NPC`·`Monster`·`Player` 스프라이트를 구성하고, 대화 상태와 전투 상태를 플래그로 전환하는 2D RPG 프로토타입입니다. | `pygame`, `random` |
 
 ## 기술 스택
 
