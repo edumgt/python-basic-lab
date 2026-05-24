@@ -1,0 +1,102 @@
+# ============================================================
+# 폐쇄망 실습 인프라 – Docker Compose
+#
+# 포함 서비스
+#   gitlab     – GitLab CE (소스 관리 + CI/CD 트리거)
+#   runner     – GitLab Runner (파이프라인 실행)
+#   nexus      – Sonatype Nexus 3 (PyPI / Docker 프록시)
+#
+# 사용법:
+#   docker compose up -d
+#   # GitLab 초기 root 비밀번호 확인
+#   docker exec -it gitlab grep 'Password:' /etc/gitlab/initial_root_password
+# ============================================================
+
+services:
+  # ──────────────────────────────────────────────────────────
+  # GitLab CE
+  # ──────────────────────────────────────────────────────────
+  gitlab:
+    image: gitlab/gitlab-ce:16.11.0-ce.0
+    container_name: gitlab
+    hostname: gitlab.local
+    restart: unless-stopped
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.local:8080'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        gitlab_rails['initial_root_password'] = 'ChangeMe1234!'
+        # 미러링: GitLab → GitHub (GITHUB_TOKEN 시크릿 설정 필요)
+        # gitlab_rails['env'] = { 'GITHUB_TOKEN' => ENV['GITHUB_TOKEN'] }
+    ports:
+      - "8080:8080"   # GitLab Web UI
+      - "2222:22"     # SSH
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+    networks:
+      - devnet
+    shm_size: "256m"
+
+  # ──────────────────────────────────────────────────────────
+  # GitLab Runner
+  # ──────────────────────────────────────────────────────────
+  runner:
+    image: gitlab/gitlab-runner:v16.11.0
+    container_name: gitlab-runner
+    restart: unless-stopped
+    depends_on:
+      - gitlab
+    volumes:
+      - runner-config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - devnet
+
+  # ──────────────────────────────────────────────────────────
+  # Sonatype Nexus 3 (PyPI 프록시 + Docker 레지스트리)
+  # ──────────────────────────────────────────────────────────
+  nexus:
+    image: sonatype/nexus3:3.67.1
+    container_name: nexus
+    restart: unless-stopped
+    ports:
+      - "8081:8081"   # Nexus Web UI / PyPI 프록시
+      - "5000:5000"   # Docker 레지스트리 (선택)
+    volumes:
+      - nexus-data:/nexus-data
+    networks:
+      - devnet
+
+  # ──────────────────────────────────────────────────────────
+  # 게임 컨테이너 (선택 – CI에서도 동일 이미지로 실행)
+  # ──────────────────────────────────────────────────────────
+  game:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rpg-game
+    profiles:
+      - game   # `docker compose --profile game up` 으로만 실행
+    environment:
+      - SDL_VIDEODRIVER=offscreen
+    networks:
+      - devnet
+
+# ──────────────────────────────────────────────────────────
+# 볼륨
+# ──────────────────────────────────────────────────────────
+volumes:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:
+  runner-config:
+  nexus-data:
+
+# ──────────────────────────────────────────────────────────
+# 네트워크
+# ──────────────────────────────────────────────────────────
+networks:
+  devnet:
+    driver: bridge
